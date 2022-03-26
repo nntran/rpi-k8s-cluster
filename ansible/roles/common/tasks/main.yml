@@ -1,0 +1,20 @@
+---
+- name: Change hostname to match node name
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Update /etc/hosts as well
+  lineinfile:
+    path: /etc/hosts
+    regexp: "^127.0.1.1\t.*$"
+    line: "127.0.1.1\t{{ inventory_hostname }}"
+
+- name: Update apt repos
+  apt:
+    update_cache: yes
+
+- name: Install common packages
+  apt:
+    name: "{{ common_packages }}"
+    state: present
+    install-recommends: no

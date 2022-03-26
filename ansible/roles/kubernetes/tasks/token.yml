@@ -1,0 +1,80 @@
+---
+# - name: Generate a new join command expiring in 1 hour
+#   shell: kubeadm token create --print-join-command --ttl 1h
+#   register: join_cmd_out
+
+# - debug: var=join_cmd_out
+
+# - name: Set the current join cmd
+#   set_fact:
+#     join_cmd: "{{ join_cmd_out.stdout }}"
+
+# If we replay this playbook, don't regenerate kubeadm_master_join_file script
+- name: Check that the {{ kubeadm_master_join_file }} exists
+  stat:
+    path: /etc/kubernetes/{{ kubeadm_master_join_file }}
+  register: file
+
+# Generate kube join command for joining the node to the Kubernetes cluster and store the command in the file named join-command
+- name: Generating token for master to join the cluster
+  shell: |
+    cert_key=$(cat /etc/kubernetes/{{ kubeadm_init_file }} | grep certificate-key | grep control-plane)
+    echo "$(kubeadm token create --print-join-command) $cert_key" >/etc/kubernetes/{{ kubeadm_master_join_file }}
+    chmod +x /etc/kubernetes/{{ kubeadm_master_join_file }}
+    sed -i '1 i\export KUBECONFIG=/etc/kubernetes/admin.conf' /etc/kubernetes/{{ kubeadm_master_join_file }}
+    cat /etc/kubernetes/{{ kubeadm_master_join_file }}
+  register: join_command
+  when: not file.stat.exists
+
+- name: Display join master command
+  debug: var=join_command.stdout
+  when: join_command is defined and not file.stat.exists
+
+- name: Check that the {{ kubeadm_master_join_file }} exists
+  stat:
+    path: /etc/kubernetes/{{ kubeadm_master_join_file }}
+  register: file
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fetch_module.html
+- name: Copy file {{ kubeadm_master_join_file }} to local
+  fetch:
+    src: /etc/kubernetes/{{ kubeadm_master_join_file }}
+    dest: "/Users/ntran/Workspaces/ntdt/infra/rpi-k8s-cluster/scripts/{{ kubeadm_master_join_file }}"
+    flat: yes
+  #ignore_errors: yes
+  #when: file.stat.exists
+
+# If we replay this playbook, don't regenerate kubeadm_worker_join_file script
+- name: Check that the {{ kubeadm_worker_join_file }} exists
+  stat:
+    path: /etc/kubernetes/{{ kubeadm_worker_join_file }}
+  register: file
+
+# Generate join command for worker
+- name: Generating token for worker to join the cluster
+  shell: |
+    worker_join_cmd=`kubeadm token create --print-join-command`
+    echo "${worker_join_cmd}" >/etc/kubernetes/{{ kubeadm_worker_join_file }}
+    chmod +x /etc/kubernetes/{{ kubeadm_worker_join_file }}
+    sed -i '1 i\export KUBECONFIG=/etc/kubernetes/admin.conf' /etc/kubernetes/{{ kubeadm_worker_join_file }}
+    cat /etc/kubernetes/{{ kubeadm_worker_join_file }}
+  register: join_command
+  #when: not file.stat.exists
+
+- name: Display join worker command
+  debug: var=join_command.stdout
+  when: join_command is defined and not file.stat.exists
+
+- name: Check that the {{ kubeadm_worker_join_file }} exists
+  stat:
+    path: /etc/kubernetes/{{ kubeadm_worker_join_file }}
+  register: file
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fetch_module.html
+- name: Copy file {{ kubeadm_worker_join_file }} to local
+  fetch:
+    src: /etc/kubernetes/{{ kubeadm_worker_join_file }}
+    dest: "/Users/ntran/Workspaces/ntdt/infra/rpi-k8s-cluster/scripts/{{ kubeadm_worker_join_file }}"
+    flat: yes
+  ignore_errors: yes
+  when: file.stat.exists

@@ -1,0 +1,38 @@
+- name: Discover swap status
+  shell: cat /proc/swaps | wc -l
+  register: swap_out
+
+- name: Disable swap if enabled
+  shell: |
+    dphys-swapfile swapoff
+    dphys-swapfile uninstall
+    systemctl disable dphys-swapfile
+  when: swap_out.stdout != "1"
+
+- name: Enable memory cgroup
+  lineinfile:
+    path: /boot/firmware/cmdline.txt
+    #regexp: "^(.*) rootwait$"
+    #line: '\1 rootwait cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
+    regexp: "^(.*) fixrtc$"
+    line: '\1 fixrtc cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
+    backrefs: yes
+  register: cmdline_modified
+
+# These two tasks will add host to local known hosts automatically
+- name: Check SSH known_hosts for {{ inventory_hostname }}
+  local_action: shell ssh-keygen -F {{ inventory_hostname }}
+  register: checkForKnownHostsEntry
+  failed_when: false
+  changed_when: false
+  ignore_errors: yes
+
+- name: Add {{ inventory_hostname }} to SSH known hosts automatically
+  when: checkForKnownHostsEntry.rc == 1
+  changed_when: checkForKnownHostsEntry.rc == 1
+  set_fact:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+
+- name: Reboot host
+  reboot:
+  when: cmdline_modified.changed

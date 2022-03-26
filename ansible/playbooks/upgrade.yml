@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+    - name: Wait for automatic system updates
+      shell: while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 1; done;
+
+    - name: Update and upgrade
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 0
+
+    - name: Reboot rpi
+      reboot:

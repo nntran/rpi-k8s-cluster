@@ -1,0 +1,24 @@
+haproxy_maxconn: "4096"
+haproxy_user: "haproxy"
+haproxy_group: "haproxy"
+
+# Default haproxy timeouts
+haproxy_connect_timeout: 5000
+haproxy_client_timeout: 50000
+haproxy_server_timeout: 50000
+
+# Backend settings.
+haproxy_backend_balance_method: "roundrobin"
+haproxy_backend_httpchk: 'HEAD / HTTP/1.1\r\nHost:localhost'
+
+# List of backend servers.
+haproxy_backend_servers:
+  - name: rpi-k8s-master-01
+    address: 10.11.13.21
+  - name: rpi-k8s-master-02
+    address: 10.11.13.22
+  - name: rpi-k8s-master-03
+    address: 10.11.13.23
+
+# Extra global vars (see README for example usage).
+haproxy_global_vars: []

@@ -1,0 +1,52 @@
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_user: ubuntu
+    ansible_ssh_pass: raspberry
+    ansible_become: true
+    ansible_become_user: root
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    rpi-k8s-lba-01:
+      ansible_host: 10.11.13.20
+    rpi-k8s-master-01:
+      ansible_host: 10.11.13.21
+    #rpi-k8s-master-02:
+    #rpi-k8s-master-03:
+    rpi-k8s-worker-01:
+      ansible_host: 10.11.13.31
+    rpi-k8s-worker-02:
+      ansible_host: 10.11.13.32
+    rpi-k8s-worker-03:
+      ansible_host: 10.11.13.33
+  children:
+    lba:
+      hosts:
+        rpi-k8s-lba-01:
+      vars:
+        node: "lba"
+    master:
+      hosts:
+        rpi-k8s-master-01:
+        #rpi-k8s-master-02:
+        #rpi-k8s-master-03:
+      vars:
+        node: "master"
+    worker:
+      hosts:
+        rpi-k8s-worker-01:
+        rpi-k8s-worker-02:
+        rpi-k8s-worker-03:
+      vars:
+        node: "worker"
+        #lba_ip: 10.11.13.20
+        master_ip: 10.11.13.21
+    rpi_v3bp:
+      hosts:
+        rpi-k8s-lba-01:
+        rpi-k8s-worker-01:
+        rpi-k8s-worker-02:
+        rpi-k8s-worker-03:
+    rpi_v4:
+      hosts:
+        rpi-k8s-master-01:

@@ -1,0 +1,31 @@
+# Playbook to uninstall kubernetes cluster on master and worker hosts
+# File name: uninstall-kubernetes.yml
+---
+- hosts: master, worker
+  become: yes
+
+  tasks:
+    # Remove Kubernetes cluster
+    - name: Remove Kubernetes cluster
+      shell: |
+        kubeadm reset -f
+        rm -rf ~/.kube
+        rm -rf /var/lib/etcd
+        rm /etc/kubernetes/kubeadm_*
+        rm /etc/kubernetes/kubelet.conf
+        rm /etc/kubernetes/pki/ca.crt
+        rm /etc/kubernetes/bootstrap-kubelet.conf
+        # exit 0
+      # run_once: true
+      ignore_errors: yes
+
+    # Uninstall kubeadm, kubelet, kubernetes-cni, ...
+    - name: Remove kubeadm, kubelet, kubernetes-cni, ...
+      shell: |
+        apt-get purge -y kubeadm kubectl kubelet kubernetes-cni kube*
+        apt-get autoremove -y
+      # run_once: true
+      ignore_errors: yes
+
+    # - name: Reboot host
+    #   reboot:

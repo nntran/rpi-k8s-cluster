@@ -1,0 +1,19 @@
+{
+    "exec-opts": [
+        "native.cgroupdriver=systemd"
+    ],
+    "registry-mirrors": [],
+    "insecure-registries": [],
+    "debug": false,
+    "experimental": false,
+    "dns": [
+        "4.4.4.4",
+        "8.8.8.8"
+    ],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "10m",
+        "max-file": "5"
+    },
+    "storage-driver": "overlay2"
+}

@@ -1,0 +1,9 @@
+---
+common_packages:
+  - vim
+  - nano
+  - ack-grep
+  - net-tools
+  - jshon
+  - gnupg2
+  - curl

@@ -1,0 +1,80 @@
+---
+- name: Install Kubernetes
+  include_tasks: install.yml
+  tags:
+    - install
+    - upgrade
+
+- name: Configure OS
+  include_tasks: configure_os.yml
+  tags:
+    - install
+
+- name: Discover node status
+  include_tasks: discover.yml
+
+- debug: var=node
+- debug: var=cluster
+
+- name: Create the cluster
+  include_tasks: setup.yml
+  when:
+    - node == "master"
+    - cluster != "initialized"
+  tags:
+    - setup
+
+- debug: var=node_ip
+- debug:
+    var: master_ip
+  when:
+    - node == "worker"
+- debug: var=token
+
+- name: Generate short-lived join token
+  include_tasks: token.yml
+  when:
+    - node == "master"
+  tags:
+    - token
+
+# - name: Set token from master node
+#   set_fact:
+#     join_cmd: "{{ hostvars['rpi-k8s-master-01']['join_cmd'] }}"
+#   when:
+#     - node == "worker"
+
+- name: Join the cluster as worker
+  include_tasks: join.yml
+  when:
+    - node == "worker"
+    - cluster != "joined"
+    - join_cmd is defined and join_cmd != ""
+  tags:
+    - join
+
+- name: Discover node status again once everyone has joined
+  include_tasks: discover.yml
+
+- name: Show cluster status
+  shell: kubectl get nodes
+  register: status
+  when:
+    - node == "master"
+
+#- debug: var=status
+- debug:
+    var: status
+  when:
+    - node == "master"
+
+- name: Show cluster info
+  shell: kubectl cluster-info
+  register: cluster_info
+  when:
+    - node == "master"
+
+- debug:
+    var: cluster_info
+  when:
+    - node == "master"

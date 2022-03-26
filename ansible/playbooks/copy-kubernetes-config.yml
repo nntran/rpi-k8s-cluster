@@ -1,0 +1,14 @@
+---
+- hosts: rpi-k8s-master-01
+  tasks:
+    - name: Create a local .kube directory
+      file:
+        path: ~/.kube
+        state: directory
+        mode: 0700
+
+    - name: Copy .kube/config from rpi-k8s-master-01
+      fetch:
+        src: ~/.kube/config
+        dest: ~/.kube/cluster-k8s-rpi-config
+        flat: yes

@@ -1,0 +1,141 @@
+---
+- hosts: rpi_v4
+  tasks:
+    - name: CPU Frequency
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^arm_freq="
+        line: "arm_freq=1800"
+    - name: Over Voltage
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^over_voltage="
+        line: "over_voltage=4"
+    - name: GPU Memory Split
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^gpu_mem="
+        line: "gpu_mem=16"
+    - name: CPU Core Frequence
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^core_freq="
+        line: "core_freq=550"
+    - name: Boot Delay (disable)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^boot_delay="
+        line: "boot_delay=0"
+    - name: Disable splash screen
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^disable_splash="
+        line: "disable_splash=1"
+    - name: Turbo for first 60 seconds (won't disable warranty)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^initial_turbo="
+        line: "initial_turbo=60"
+
+    - name: reboot host
+      ansible.builtin.reboot:
+- hosts: rpi_v3bp
+  tasks:
+    - name: CPU Frequency
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^arm_freq="
+        line: "arm_freq=1400"
+    - name: Over Voltage
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^over_voltage="
+        line: "over_voltage=4"
+    - name: GPU Memory Split
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^gpu_mem="
+        line: "gpu_mem=16"
+    - name: SD RAM Frequency
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^sdram_freq="
+        line: "sdram_freq=500"
+    - name: CPU Core Frequence
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^core_freq="
+        line: "core_freq=500"
+    - name: Boot Delay (disable)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^boot_delay="
+        line: "boot_delay=0"
+    - name: Disable splash screen
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^disable_splash="
+        line: "disable_splash=1"
+    - name: Turbo for first 60 seconds (won't disable warranty)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^initial_turbo="
+        line: "initial_turbo=60"
+    - name: SD Card Overclock
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^dtparam=sd_overclock="
+        line: "dtparam=sd_overclock=83"
+
+    - name: reboot host
+      ansible.builtin.reboot:
+- hosts: rpi_v3b
+  tasks:
+    - name: CPU Frequency
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^arm_freq="
+        line: "arm_freq=1300"
+    - name: Over Voltage
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^over_voltage="
+        line: "over_voltage=4"
+    - name: GPU Memory Split
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^gpu_mem="
+        line: "gpu_mem=16"
+    - name: SD RAM Frequency
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^sdram_freq="
+        line: "sdram_freq=500"
+    - name: CPU Core Frequence
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^core_freq="
+        line: "core_freq=500"
+    - name: Boot Delay (disable)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^boot_delay="
+        line: "boot_delay=0"
+    - name: Disable splash screen
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^disable_splash="
+        line: "disable_splash=1"
+    - name: Turbo for first 60 seconds (won't disable warranty)
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^initial_turbo="
+        line: "initial_turbo=60"
+    - name: SD Card Overclock
+      lineinfile:
+        path: /boot/firmware/config.txt
+        regexp: "^dtparam=sd_overclock="
+        line: "dtparam=sd_overclock=83"
+
+    - name: reboot host
+      ansible.builtin.reboot:

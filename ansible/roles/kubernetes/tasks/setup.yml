@@ -1,0 +1,70 @@
+---
+# Pull all images for offline install
+- name: Pull all images for offline install
+  command: kubeadm config images pull
+
+# - name: Generate a token before init
+#   command: kubeadm token generate
+#   register: init_token
+
+# - name: Set token fact
+#   set_fact:
+#     init_token: "{{ init_token.stdout }}"
+
+- name: Init the cluster with kubeadm
+  #command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --ignore-preflight-errors=Mem
+  command: kubeadm init --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --control-plane-endpoint {{ node_ip }}:{{ control_plane_port }} --node-name {{ primary_master_node_name }} --upload-certs --ignore-preflight-errors=Mem
+  args:
+    creates: /etc/kubernetes/{{ kubeadm_init_file }}
+  register: init_cmd
+  notify: kubelet status
+
+- debug: var=init_cmd
+
+- lineinfile:
+    path: /etc/kubernetes/{{ kubeadm_init_file }}
+    line: "{{ init_cmd.stdout }}"
+    create: yes
+  ignore_errors: yes
+  when: not file.stat.exists
+  #when: kubeadm_init_cmd.stdout.find("kubeadm join") != -1
+
+# Check that the /etc/kubernetes/admin.conf exists
+- name: Check that the /etc/kubernetes/admin.conf exists
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: admin_conf_file
+
+- name: Ensure the .kube dir exists for root
+  file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy in the kubernetes config to the root user
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    group: root
+
+- name: Ensure the .kube dir exists for the {{ ansible_ssh_user }} user
+  file:
+    path: /home/{{ ansible_ssh_user }}/.kube
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+
+- name: Copy in the kubernetes config to the {{ ansible_ssh_user }} user
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ ansible_ssh_user }}/.kube/config
+    remote_src: yes
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+
+- name: Install {{ cni }} CNI
+  include_tasks: "cni/{{ cni }}.yml"
+  when: cni is defined and cni != ''

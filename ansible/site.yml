@@ -1,0 +1,33 @@
+---
+- hosts: all
+  roles:
+    - common
+  tags:
+    - common
+
+- hosts: lba
+  roles:
+    #- docker
+    - lba/haproxy
+  tags:
+    - lba
+
+- hosts: master, worker
+  roles:
+    # NFS PV Support
+    - storage/nfs
+    # Longhorn PV Support
+    - storage/iscsi
+  tags:
+    - storage
+
+- hosts: master, worker
+  roles:
+    - containerd
+    - kubernetes
+  tags:
+    - kubernetes
+# - hosts: master
+#   roles:
+#   tags:
+#     - addons

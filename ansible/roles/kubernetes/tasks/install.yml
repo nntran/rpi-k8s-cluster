@@ -1,0 +1,74 @@
+---
+# Following https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- name: Install required packages
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "apt-transport-https"
+    - "ca-certificates"
+    - "curl"
+
+# Installing kubelet, kubeadm and kubectl
+- name: Add an apt signing key
+  apt_key:
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    state: present
+
+- name: Add apt repository
+  apt_repository:
+    repo: "deb [arch=arm64] https://apt.kubernetes.io/ kubernetes-xenial main"
+    update_cache: yes
+
+- name: Install Kubernetes packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+    force: yes
+  vars:
+    packages:
+      - kubelet={{ version }}
+      - kubeadm={{ version }}
+      - kubectl={{ version }}
+      - kubernetes-cni
+
+- name: Check Kubernetes version
+  command: kubeadm version -o 'json'
+  register: kube_version
+
+- debug:
+    msg: "{{ kube_version.stdout }}"
+
+# - name: Pin kubernetes packages
+#   copy:
+#     dest: "/etc/apt/preferences.d/{{ item }}"
+#     content: |
+#       Package: {{ item }}
+#       Pin: version {{ package_versions[item] }}
+#       Pin-Priority: 1002
+#   with_items: "{{ k8s_packages }}"
+
+# Kubelet will not start if the system has swap enabled,
+# so we are disabling swap
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+# Restart kubelet
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
+# We don't have to configure kubelet's cgroup driver
+# As of 1.21 it defaults to 'systemd' if not configured
+# https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/#configuring-the-kubelet-cgroup-driver
