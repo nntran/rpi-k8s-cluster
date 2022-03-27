@@ -7,9 +7,9 @@
 #   command: kubeadm token generate
 #   register: init_token
 
-- name: Check that the {{ kubeadm_init_file }} exists
+- name: Check that the {{ init_file }} exists
   stat:
-    path: /etc/kubernetes/{{ kubeadm_init_file }}
+    path: /etc/kubernetes/{{ init_file }}
   register: file
 
 - name: Init the cluster with kubeadm
