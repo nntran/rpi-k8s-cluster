@@ -7,33 +7,27 @@
 #   command: kubeadm token generate
 #   register: init_token
 
-# - name: Set token fact
-#   set_fact:
-#     init_token: "{{ init_token.stdout }}"
+- name: Check that the {{ kubeadm_init_file }} exists
+  stat:
+    path: /etc/kubernetes/{{ kubeadm_init_file }}
+  register: file
 
 - name: Init the cluster with kubeadm
   #command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --ignore-preflight-errors=Mem
   command: kubeadm init --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --control-plane-endpoint {{ node_ip }}:{{ control_plane_port }} --node-name {{ primary_master_node_name }} --upload-certs --ignore-preflight-errors=Mem
   args:
-    creates: /etc/kubernetes/{{ kubeadm_init_file }}
-  register: init_cmd
+    creates: /etc/kubernetes/{{ init_file }}
+  register: init_cmd_out
+  # run_once: true
+  # ignore_errors: yes
+  #when: not file.stat.exists
   notify: kubelet status
 
-- debug: var=init_cmd
+- debug: var=init_cmd_out
 
-- lineinfile:
-    path: /etc/kubernetes/{{ kubeadm_init_file }}
-    line: "{{ init_cmd.stdout }}"
-    create: yes
-  ignore_errors: yes
-  when: not file.stat.exists
-  #when: kubeadm_init_cmd.stdout.find("kubeadm join") != -1
-
-# Check that the /etc/kubernetes/admin.conf exists
-- name: Check that the /etc/kubernetes/admin.conf exists
-  stat:
-    path: /etc/kubernetes/admin.conf
-  register: admin_conf_file
+- name: Set init command fact
+  set_fact:
+    init_cmd: "{{ init_cmd_out.stdout }}"
 
 - name: Ensure the .kube dir exists for root
   file:

@@ -3,14 +3,12 @@ version: "1.23.5-00"
 reset: false
 cluster: ""
 
-kubeadm_init_file: kubeadm_init.log
-kubeadm_master_join_file: kubeadm_master_join.sh
-kubeadm_worker_join_file: kubeadm_worker_join.sh
-
 control_plane_port: 6443
 primary_master_node_name: rpi-k8s-master-01
-
+# Load balancer IP
+lba_ip: 10.11.13.20
 pod_network_cidr: "172.20.0.0/16"
+init_file: kubeadm_init.log
 
 cni: "weave"
 cni_init_extra:

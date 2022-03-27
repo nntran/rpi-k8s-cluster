@@ -1,26 +1,7 @@
 ---
 # Once https://github.com/kubernetes/kubeadm/issues/659 is resolved we can drop the unsafe flag and get/use the hash
-# - name: Join the cluster
-#   command: "{{ join_cmd }}"
-#   register: out
+- name: Join the cluster as worker
+  command: "{{ worker_join_cmd }}"
+  register: out
 
-# - name: Print stdout
-#   debug:
-#     var: out
-
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html
-- name: Copy local file {{ kubeadm_worker_join_file }} on the remote machine
-  copy:
-    src: "/Users/ntran/Workspaces/ntdt/infra/rpi-k8s-cluster/scripts/{{ kubeadm_worker_join_file }}"
-    dest: /etc/kubernetes/{{ kubeadm_worker_join_file }}
-    #mode: u+x,g+x,o-rwx
-
-# Join cluster as master
-- name: Join the {{ cluster.type }} cluster as secondary master
-  command: sh /etc/kubernetes/{{ kubeadm_worker_join_file }}
-  register: join_command
-  ignore_errors: yes
-
-- name: Display join cluster commands
-  debug: var=join_command.stdout
-  when: join_command is defined
+  debug: var=out
