@@ -23,7 +23,8 @@
 
 - hosts: master, worker
   roles:
-    - containerd
+    #- containerd
+    - docker
     - kubernetes
   tags:
     - kubernetes

@@ -38,43 +38,53 @@
   tags:
     - token
 
-# - name: Set token from master node
-#   set_fact:
-#     join_cmd: "{{ hostvars['rpi-k8s-master-01']['join_cmd'] }}"
-#   when:
-#     - node == "worker"
+- name: Set token from master node
+  set_fact:
+    worker_join_cmd: "{{ hostvars['rpi-k8s-master-01']['worker_join_cmd'] }}"
+  when:
+    - node == "worker"
+  tags:
+    - join
 
 - name: Join the cluster as worker
   include_tasks: join.yml
   when:
     - node == "worker"
     - cluster != "joined"
-    - join_cmd is defined and join_cmd != ""
+    - worker_join_cmd is defined and worker_join_cmd != ""
   tags:
     - join
 
 - name: Discover node status again once everyone has joined
   include_tasks: discover.yml
 
-- name: Show cluster status
+- name: Show cluster info
+  shell: kubectl cluster-info
+  register: cluster_info
+  when:
+    - node == "master"
+  tags:
+    - status
+
+- debug:
+    var: cluster_info
+  when:
+    - node == "master"
+  tags:
+    - status
+
+- name: Show cluster nodes
   shell: kubectl get nodes
   register: status
   when:
     - node == "master"
+  tags:
+    - status
 
 #- debug: var=status
 - debug:
     var: status
   when:
     - node == "master"
-
-- name: Show cluster info
-  shell: kubectl cluster-info
-  register: cluster_info
-  when:
-    - node == "master"
-
-- debug:
-    var: cluster_info
-  when:
-    - node == "master"
+  tags:
+    - status

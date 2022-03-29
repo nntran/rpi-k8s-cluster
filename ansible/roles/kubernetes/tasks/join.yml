@@ -4,4 +4,4 @@
   command: "{{ worker_join_cmd }}"
   register: out
 
-  debug: var=out
+- debug: var=out
