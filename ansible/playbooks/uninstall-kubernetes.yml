@@ -20,9 +20,21 @@
       ignore_errors: yes
 
     # Uninstall kubeadm, kubelet, kubernetes-cni, ...
-    - name: Remove kubeadm, kubelet, kubernetes-cni, ...
+    - name: Remove kubernetes ...
       shell: |
+        apt-mark showhold
+        apt-mark unhold kubeadm kubectl kubelet kubernetes-cni
         apt-get purge -y kubeadm kubectl kubelet kubernetes-cni kube*
+        apt-get autoremove -y
+      # run_once: true
+      ignore_errors: yes
+
+    # Uninstall docker-ce, kubelet, kubernetes-cni, ...
+    - name: Remove docker ...
+      shell: |
+        apt-mark showhold
+        apt-mark unhold docker-ce docker-ce-cli
+        apt-get purge -y docker-ce docker-ce-cli
         apt-get autoremove -y
       # run_once: true
       ignore_errors: yes
