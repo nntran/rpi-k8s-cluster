@@ -33,23 +33,27 @@
     update_cache: yes
   vars:
     packages:
-      # for ubuntu 20.04
-      # - docker-ce=5:{{ conf.packages.containerd.version }}~3-0~ubuntu-{{ ansible_distribution_release }}
-      # - docker-ce-cli=5:{{ conf.packages.containerd.version }}~3-0~ubuntu-{{ ansible_distribution_release }}
-      # - containerd.io={{ conf.packages.containerd.version }}
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
+      # Ubuntu 20.x
+      - docker-ce=5:{{ docker_version }}~3-0~ubuntu-{{ ansible_distribution_release }}
+      - docker-ce-cli=5:{{ docker_version }}~3-0~ubuntu-{{ ansible_distribution_release }}
+      - containerd.io={{ containerd_version }}
+      # Ubuntu 18.x
+      # - docker-ce
+      # - docker-ce-cli
+      # - containerd.io
   notify:
     - docker status
 
 # Copy the daemon.json from local to remote
-- name: Copy the daemon.json config file if it exists
-  copy: src=files/daemon.json dest=/etc/docker/daemon.json
-  failed_when: false
+- name: Copy the daemon.json config file on remote
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: 0644
+  notify: restart haproxy
 
 # Add a user named to the “docker” group.
-- name: Add "{{ ansible_ssh_user }}" user to docker group
+- name: Add {{ ansible_ssh_user }} user to docker group
   user:
     name: "{{ ansible_ssh_user }}"
     group: docker

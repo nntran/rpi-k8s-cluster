@@ -1,7 +1,13 @@
 ---
-version: "20.10.14"
+# apt-cache madison docker-ce, docker-ce-cli
+docker_version: "19.03.14"
+
+# apt-cache madison containerd.io
+containerd_version: "1.5.11-1"
 
 packages:
   - apt-transport-https
   - ca-certificates
   - software-properties-common
+
+log_driver: "json-file"
