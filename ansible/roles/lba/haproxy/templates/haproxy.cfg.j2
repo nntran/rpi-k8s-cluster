@@ -13,10 +13,10 @@ global
 {% endfor %}
 
 defaults
-    log global
     mode  http
     option  httplog
     option  dontlognull
+    log global
 {% if haproxy_version is version('1.4', '<=') %}
     contimeout {{ haproxy_connect_timeout }}
     clitimeout {{ haproxy_client_timeout }}
@@ -51,10 +51,6 @@ frontend http-in
     mode http #Activation du mode HTTP
     option httplog #Activation des logs
     option forwardfor
-
-    # Proxy Traefik
-    acl is_traefik_dashboard hdr(host) -i traefik.dev.lan
-    use_backend traefik-dashboard if is_traefik_dashboard
     
     # Default redirect
     default_backend traefik-http
@@ -64,10 +60,6 @@ frontend https-in
     mode tcp
     #Activation des logs
     option tcplog
-
-    # Proxy Traefik
-    acl is_traefik_dashboard hdr(host) -i traefik.dev.lan
-    use_backend traefik-dashboard if is_traefik_dashboard
 
     #Si aucun acl est valide, utiliser le backend "traefik-https"
     default_backend traefik-https
@@ -83,12 +75,8 @@ backend kubernetes-api
     option tcp-check
 
     # Cluster K8S
-{% if haproxy_backend_httpchk != '' %}
-    option httpchk {{ haproxy_backend_httpchk }}
-{% endif %}
-    cookie SERVERID insert indirect
 {% for backend in haproxy_backend_servers %}
-    server {{ backend.name }} {{ backend.address }}:6443 cookie {{ backend.name }} check fall 3 rise 2
+    server {{ backend.name }} {{ backend.address }}:6443 check
 {% endfor %}
 
 backend traefik-http
@@ -104,9 +92,9 @@ backend traefik-http
 {% if haproxy_backend_httpchk != '' %}
     option httpchk {{ haproxy_backend_httpchk }}
 {% endif %}
-    cookie SERVERID insert indirect
+    #cookie SERVERID insert indirect
 {% for backend in haproxy_backend_servers %}
-    server {{ backend.name }} {{ backend.address }}:31080 cookie {{ backend.name }} check fall 3 rise 2
+    server {{ backend.name }} {{ backend.address }}:31080 check
 {% endfor %}
 
 backend traefik-https
@@ -118,34 +106,18 @@ backend traefik-https
 {% if haproxy_backend_httpchk != '' %}
     option httpchk {{ haproxy_backend_httpchk }}
 {% endif %}
-    cookie SERVERID insert indirect
+    #cookie SERVERID insert indirect
 {% for backend in haproxy_backend_servers %}
-    server {{ backend.name }} {{ backend.address }}:31443 cookie {{ backend.name }} check fall 3 rise 2
-{% endfor %}
-
-backend traefik-dashboard
-    mode http
-    balance {{ haproxy_backend_balance_method }}
-    #balance leastconn
-
-    # Cluster K8S
-{% if haproxy_backend_httpchk != '' %}
-    option httpchk {{ haproxy_backend_httpchk }}
-{% endif %}
-    cookie SERVERID insert indirect
-{% for backend in haproxy_backend_servers %}
-    server {{ backend.name }} {{ backend.address }}:31880 cookie {{ backend.name }} check fall 3 rise 2
+    server {{ backend.name }} {{ backend.address }}:31443 check
 {% endfor %}
 
 #########################################################################
 ################################# STATS #################################
 
 listen stats
-    bind *:32700
+    bind *:80
     stats enable
     stats uri /stats
     stats hide-version
     stats refresh 30s
     stats show-node
-    stats auth username:password
-    stats auth admin:admin
