@@ -1,0 +1,126 @@
+# https://docs.traefik.io/routing/providers/kubernetes-ingress/
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: traefik
+  labels:
+    app: traefik
+spec:
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      # hostNetwork: true
+      # dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      # Allow to deploy on master nodes
+      # https://stackoverflow.com/questions/41999756/how-to-force-pods-deployments-to-master-nodes
+      # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      # Nodes selector
+      # Only master nodes and under Linux OS
+      # nodeSelector:
+      #   node.role: master
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/master
+                    operator: Exists
+                  # AND operator
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      containers:
+        - name: traefik
+          image: traefik:v2.4.0
+          imagePullPolicy: Always
+          args:
+            - --configfile=/etc/traefik/traefik.yaml
+            # - --api
+            # - --api.insecure
+            # - --providers.kubernetesingress
+            # - --entrypoints.http.address=:80
+            # - --entrypoints.https.address=:443
+            # - --entrypoints.streaming.address=:1704/udp
+            # ACME (LetsEncrypt)
+            # https://doc.traefik.io/traefik/migration/v1-to-v2/#acme-letsencrypt
+            # - --certificatesresolvers.le.acme.email=admin@systel-sa.fr
+            # - --certificatesresolvers.le.acme.storage=/etc/traefik/certs/acme.json
+            # - --certificatesResolvers.le.acme.httpChallenge.entryPoint=http
+            # # Logs
+            # # https://doc.traefik.io/traefik/migration/v1-to-v2/#traefik-logs
+            # - --log.level=INFO
+            # - --log.filePath=/var/log/traefik.log
+            # - --log.format=json
+            # # Tracing
+            # # https://doc.traefik.io/traefik/migration/v1-to-v2/#tracing
+            # - --tracing.servicename=traefik
+            # - --tracing.jaeger.localagenthostport=jaeger-server.monitoring.svc:6831
+            # - --tracing.jaeger.samplingparam=1.0
+            # - --tracing.jaeger.samplingserverurl=http://jaeger-server.monitoring.svc:5778/sampling
+            # - --tracing.jaeger.samplingtype=const
+            # - --tracing.jaeger.propagation=jaeger
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 80
+            - name: https
+              protocol: TCP
+              containerPort: 443
+            - name: admin
+              protocol: TCP
+              containerPort: 8080
+            - name: streaming
+              protocol: UDP
+              containerPort: 1704
+            - name: logstash
+              protocol: TCP
+              containerPort: 5044
+          resources:
+            requests:
+              cpu: 100m
+              memory: 20Mi
+            limits:
+              cpu: 200m
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/traefik
+            # - name: certs
+            #   mountPath: /etc/traefik/certs
+            # - name: logs
+            #   mountPath: /var/log
+      volumes:
+        - name: config
+          configMap:
+            name: traefik-config
+            defaultMode: 420
+        # - name: certs
+        #   persistentVolumeClaim:
+        #     claimName: traefik-certs-pvc
+        # - name: logs
+        #   persistentVolumeClaim:
+        #     claimName: traefik-logs-pvc
