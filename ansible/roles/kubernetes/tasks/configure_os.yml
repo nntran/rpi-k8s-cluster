@@ -12,10 +12,10 @@
 - name: Enable memory cgroup
   lineinfile:
     path: /boot/firmware/cmdline.txt
-    regexp: "^(.*) rootwait$"
-    line: '\1 rootwait cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
-    regexp: "^(.*) fixrtc$"
-    line: '\1 fixrtc cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
+    # regexp: "^(.*) rootwait$"
+    # line: '\1 rootwait cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
+    # regexp: "^(.*) fixrtc$"
+    # line: '\1 fixrtc cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
     regexp: "^(.*) splash$"
     line: '\1 splash cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1'
     backrefs: yes
