@@ -4,23 +4,23 @@
   shell: |
     cert_key=$(cat /etc/kubernetes/{{ init_file }} | grep certificate-key | grep control-plane)
     echo "$(kubeadm token create --print-join-command --ttl 1h) $cert_key"
-  register: join_cmd
+  register: join_cmd_master
 
 - name: Display join command as master
-  debug: var=join_cmd.stdout
+  debug: var=join_cmd_master.stdout
 
 - name: Set the join command for master
   set_fact:
-    master_join_cmd: "{{ join_cmd.stdout }}"
+    master_join_cmd: "{{ join_cmd_master.stdout }}"
 
 # Generate join command for worker
 - name: Generating token for worker to join the cluster
   shell: kubeadm token create --print-join-command --ttl 1h
-  register: join_cmd
+  register: join_cmd_worker
 
 - name: Display join command as worker
-  debug: var=join_cmd.stdout
+  debug: var=join_cmd_worker.stdout
 
 - name: Set the join command for worker
   set_fact:
-    worker_join_cmd: "{{ join_cmd.stdout }}"
+    worker_join_cmd: "{{ join_cmd_worker.stdout }}"

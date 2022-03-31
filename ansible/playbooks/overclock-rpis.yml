@@ -1,5 +1,6 @@
 ---
-- hosts: rpi_v4
+# RPI model 4B
+- hosts: rpi4
   tasks:
     - name: CPU Frequency
       lineinfile:
@@ -38,8 +39,10 @@
         line: "initial_turbo=60"
 
     - name: reboot host
-      ansible.builtin.reboot:
-- hosts: rpi_v3bp
+      reboot:
+
+# RPI model 3B+
+- hosts: rpi3bp
   tasks:
     - name: CPU Frequency
       lineinfile:
@@ -88,8 +91,10 @@
         line: "dtparam=sd_overclock=83"
 
     - name: reboot host
-      ansible.builtin.reboot:
-- hosts: rpi_v3b
+      reboot:
+
+# RPI model 3B
+- hosts: rpi3b
   tasks:
     - name: CPU Frequency
       lineinfile:
@@ -138,4 +143,4 @@
         line: "dtparam=sd_overclock=83"
 
     - name: reboot host
-      ansible.builtin.reboot:
+      reboot:

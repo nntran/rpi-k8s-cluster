@@ -1,16 +1,23 @@
 ---
+# Kubernetes version
 version: "1.19.6-00"
-reset: false
-cluster: ""
 
-control_plane_port: 6443
-primary_master_node_name: rpi-k8s-master-01
 # Load balancer IP
-lba_ip: 10.11.13.20
+# Already defined in cluster.yml file
+#lba_ip: 10.11.13.20
+
+# Pode network cdir
 pod_network_cidr: "172.20.0.0/16"
+
+# CNI
+cni: "weave"
+cdir:
+  flannel: "{{ pod_network_cidr }}"
+  weave: "{{ pod_network_cidr }}"
+
+# Kubeadm init logs file
 init_file: kubeadm_init.log
 
-cni: "weave"
-cni_init_extra:
-  flannel: "--pod-network-cidr={{ pod_network_cidr }}"
-  weave: "--pod-network-cidr={{ pod_network_cidr }}"
+# Others flags
+reset: false
+cluster: ""

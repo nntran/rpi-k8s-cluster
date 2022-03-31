@@ -19,39 +19,34 @@
 - name: Create the cluster
   include_tasks: setup.yml
   when:
-    - node == "master"
+    - node == "primary-master"
     - cluster != "initialized"
   tags:
     - setup
 
 - debug: var=node_ip
-- debug:
-    var: master_ip
-  when:
-    - node == "worker"
-- debug: var=token
+- debug: var=cluster
 
 - name: Generate short-lived join token
   include_tasks: token.yml
   when:
-    - node == "master"
+    - node == "primary-master"
   tags:
     - token
 
-- name: Set token from master node
-  set_fact:
-    worker_join_cmd: "{{ hostvars['rpi-k8s-master-01']['worker_join_cmd'] }}"
+- name: Join the cluster as master
+  include_tasks: master_join.yml
   when:
-    - node == "worker"
+    - node == "secondary-master"
+    - cluster != "joined"
   tags:
     - join
 
 - name: Join the cluster as worker
-  include_tasks: join.yml
+  include_tasks: worker_join.yml
   when:
     - node == "worker"
     - cluster != "joined"
-    - worker_join_cmd is defined and worker_join_cmd != ""
   tags:
     - join
 
@@ -62,14 +57,14 @@
   shell: kubectl cluster-info
   register: cluster_info
   when:
-    - node == "master"
+    - node == "primary-master"
   tags:
     - status
 
 - debug:
     var: cluster_info
   when:
-    - node == "master"
+    - node == "primary-master"
   tags:
     - status
 
@@ -77,7 +72,7 @@
   shell: kubectl get nodes
   register: status
   when:
-    - node == "master"
+    - node == "primary-master"
   tags:
     - status
 
@@ -85,6 +80,6 @@
 - debug:
     var: status
   when:
-    - node == "master"
+    - node == "primary-master"
   tags:
     - status

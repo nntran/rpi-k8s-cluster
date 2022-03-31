@@ -7,12 +7,12 @@
 
 - hosts: lba
   roles:
-    #- docker
+    - docker
     - lba/haproxy
   tags:
     - lba
 
-- hosts: master, worker
+- hosts: master_pri, master_sec, worker
   roles:
     # NFS PV Support
     - storage/nfs
@@ -21,14 +21,14 @@
   tags:
     - storage
 
-- hosts: master, worker
+- hosts: master_pri, master_sec, worker
   roles:
     #- containerd
     - docker
     - kubernetes
   tags:
     - kubernetes
-# - hosts: master
+# - hosts: master_pri
 #   roles:
 #   tags:
 #     - addons

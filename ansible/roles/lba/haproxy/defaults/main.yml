@@ -15,10 +15,10 @@ haproxy_backend_httpchk: "" #'HEAD / HTTP/1.1\r\nHost:localhost'
 haproxy_backend_servers:
   - name: rpi-k8s-master-01
     address: 10.11.13.21
-  # - name: rpi-k8s-master-02
-  #   address: 10.11.13.22
-  # - name: rpi-k8s-master-03
-  #   address: 10.11.13.23
+  - name: rpi-k8s-master-02
+    address: 10.11.13.22
+  - name: rpi-k8s-master-03
+    address: 10.11.13.23
 
 # Extra global vars (see README for example usage).
 haproxy_global_vars: []

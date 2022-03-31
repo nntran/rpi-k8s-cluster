@@ -1,40 +1,39 @@
 # Playbook to uninstall kubernetes cluster on master and worker hosts
 # File name: uninstall-kubernetes.yml
 ---
-- hosts: master, worker
+- hosts: master_pri, master_sec, worker
   become: yes
 
   tasks:
     # Remove Kubernetes cluster
-    - name: Remove Kubernetes cluster
+    - name: Delete kubernetes cluster
       shell: |
         kubeadm reset -f
+      # when:
+      #   - node == "primary-master" or node == "secondary-master"
+      ignore_errors: yes
+
+    - name: Clean kubernetes config
+      shell: |
+        rm -rf /etc/kubernetes
         rm -rf ~/.kube
+        # exit 0
+      # run_once: true
+      ignore_errors: yes
+
+    - name: Clean etcd
+      shell: |
         rm -rf /var/lib/etcd
-        rm /etc/kubernetes/kubeadm_*
-        rm /etc/kubernetes/kubelet.conf
-        rm /etc/kubernetes/pki/ca.crt
-        rm /etc/kubernetes/bootstrap-kubelet.conf
         # exit 0
       # run_once: true
       ignore_errors: yes
 
     # Uninstall kubeadm, kubelet, kubernetes-cni, ...
-    - name: Remove kubernetes ...
+    - name: Uninstall kubernetes packages
       shell: |
         apt-mark showhold
         apt-mark unhold kubeadm kubectl kubelet kubernetes-cni
         apt-get purge -y kubeadm kubectl kubelet kubernetes-cni kube*
-        apt-get autoremove -y
-      # run_once: true
-      ignore_errors: yes
-
-    # Uninstall docker-ce, kubelet, kubernetes-cni, ...
-    - name: Remove docker ...
-      shell: |
-        apt-mark showhold
-        apt-mark unhold docker-ce docker-ce-cli
-        apt-get purge -y docker-ce docker-ce-cli
         apt-get autoremove -y
       # run_once: true
       ignore_errors: yes

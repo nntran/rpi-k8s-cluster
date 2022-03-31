@@ -12,6 +12,16 @@
       - gnupg-agent
       - software-properties-common
 
+# Uninstall docker-ce, docker-ce-cli, ...
+- name: Remove existing docker ...
+  shell: |
+    apt-mark showhold
+    apt-mark unhold docker-ce docker-ce-cli
+    apt-get purge -y docker-ce docker-ce-cli
+    apt-get autoremove -y
+  # run_once: true
+  ignore_errors: yes
+
 # Installing Docker
 - name: Add an apt signing key for docker
   apt_key:
@@ -50,10 +60,16 @@
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     mode: 0644
-  notify: restart haproxy
+  notify:
+    - docker status
+  register: cmdline_modified
 
 # Add a user named to the “docker” group.
-- name: Add {{ ansible_ssh_user }} user to docker group
+- name: Add ansible ssh user to docker group
   user:
     name: "{{ ansible_ssh_user }}"
     group: docker
+
+- name: Reboot host
+  reboot:
+  when: cmdline_modified.changed

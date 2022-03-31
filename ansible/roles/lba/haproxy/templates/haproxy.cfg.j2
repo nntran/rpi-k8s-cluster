@@ -51,8 +51,6 @@ frontend http-in
     mode http #Activation du mode HTTP
     option httplog #Activation des logs
     option forwardfor
-    
-    # Default redirect
     default_backend traefik-http
 
 frontend https-in
@@ -60,8 +58,6 @@ frontend https-in
     mode tcp
     #Activation des logs
     option tcplog
-
-    #Si aucun acl est valide, utiliser le backend "traefik-https"
     default_backend traefik-https
 
 
@@ -115,7 +111,7 @@ backend traefik-https
 ################################# STATS #################################
 
 listen stats
-    bind *:80
+    bind *:8080
     stats enable
     stats uri /stats
     stats hide-version

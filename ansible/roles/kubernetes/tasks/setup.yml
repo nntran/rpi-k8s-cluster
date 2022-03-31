@@ -7,20 +7,19 @@
 #   command: kubeadm token generate
 #   register: init_token
 
-- name: Check that the {{ init_file }} exists
-  stat:
-    path: /etc/kubernetes/{{ init_file }}
-  register: file
-
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 - name: Init the cluster with kubeadm
-  #command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --ignore-preflight-errors=Mem
-  command: kubeadm init --apiserver-advertise-address={{ node_ip }} {{ cni_init_extra[cni] }} --control-plane-endpoint {{ node_ip }}:{{ control_plane_port }} --node-name {{ primary_master_node_name }} --upload-certs --ignore-preflight-errors=Mem
-  args:
-    creates: /etc/kubernetes/{{ init_file }}
+  # No LBA
+  # command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} --pod-network-cidr={{ cdir[cni] }} --ignore-preflight-errors=Mem
+  # With LBA (HA cluster)
+  # command: kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ lba_ip }} --control-plane-endpoint={{ lba_ip }}:6443 --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem
+  # command: kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem
+  # args:
+  #   creates: /etc/kubernetes/{{ init_file }}
+  shell: |
+    kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem > /etc/kubernetes/{{ init_file }}
+    cat /etc/kubernetes/{{ init_file }}
   register: init_cmd_out
-  # run_once: true
-  # ignore_errors: yes
-  #when: not file.stat.exists
   notify: kubelet status
 
 - debug: var=init_cmd_out
@@ -44,14 +43,14 @@
     owner: root
     group: root
 
-- name: Ensure the .kube dir exists for the {{ ansible_ssh_user }} user
+- name: Ensure the .kube dir exists for the ansible ssh user
   file:
     path: /home/{{ ansible_ssh_user }}/.kube
     state: directory
     owner: "{{ ansible_ssh_user }}"
     group: "{{ ansible_ssh_user }}"
 
-- name: Copy in the kubernetes config to the {{ ansible_ssh_user }} user
+- name: Copy in the kubernetes config to the ansible ssh user
   copy:
     src: /etc/kubernetes/admin.conf
     dest: /home/{{ ansible_ssh_user }}/.kube/config

@@ -1,3 +1,5 @@
 ---
 - name: docker status
-  service: name=docker state=started
+  service:
+    name: docker
+    state: started

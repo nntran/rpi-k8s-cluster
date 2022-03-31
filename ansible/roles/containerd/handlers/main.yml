@@ -1,5 +1,5 @@
 ---
-- name: docker status
-  service:
-    name: docker
-    state: started
+- name: restart containerd
+  systemd:
+    name: containerd
+    state: restarted
