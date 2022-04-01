@@ -48,7 +48,7 @@ spec:
                       - linux
       containers:
         - name: traefik
-          image: traefik:v2.4.0
+          image: traefik:v2.7 #v2.4.0 bug detected with K8S v 1.23.5 => dashboard not load using ingress
           imagePullPolicy: Always
           args:
             - --configfile=/etc/traefik/traefik.yaml
