@@ -22,7 +22,7 @@ all:
     rpi-k8s-worker-03:
       ansible_host: 10.11.13.33
   children:
-    lba:
+    load_balancer:
       hosts:
         rpi-k8s-lba-01:
       vars:

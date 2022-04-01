@@ -1,0 +1,15 @@
+---
+- name: Cluster info
+  shell: kubectl cluster-info
+  register: cluster_info
+
+- debug:
+    var: cluster_info
+
+- name: Cluster nodes
+  shell: kubectl get nodes
+  register: status
+
+#- debug: var=status
+- debug:
+    var: status

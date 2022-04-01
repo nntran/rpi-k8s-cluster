@@ -1,0 +1,35 @@
+---
+- hosts: master_pri, master_sec, worker
+  tasks:
+    # Uninstall docker-ce, docker-ce-cli, ...
+    # List of docker dependencies to uninstall
+    # dpkg -l | grep -i docker
+
+    - name: Check current docker version
+      shell: |
+        docker version | grep Version | head -n 1 | awk '{print $2}'
+      register: current_version
+
+    - debug: var=current_version
+
+    - name: Remove docker and its dependencies
+      shell: |
+        apt-mark showhold
+        apt-mark unhold docker-ce docker-ce-cli docker-ce-rootless-extras
+        apt-get purge -y docker-ce docker-ce-cli docker-ce-rootless-extras
+        apt-get autoremove -y --purge docker-ce docker-ce-cli docker-ce-rootless-extras
+      ignore_errors: yes
+
+    - name: Remove docker images, containers, volumes, ...
+      shell: |
+        rm -rf /var/lib/docker
+        rm -rf /var/lib/docker.bk
+        rm -rf /etc/docker
+        rm -rf /var/run/docker.sock
+      ignore_errors: yes
+
+    - name: Clean apt cache
+      shell: |
+        rm -rf /var/cache/apt/*
+        apt clean all
+      ignore_errors: yes

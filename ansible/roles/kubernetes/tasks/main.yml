@@ -12,6 +12,8 @@
 
 - name: Discover node status
   include_tasks: discover.yml
+  tags:
+    - install
 
 - debug: var=node
 - debug: var=cluster
@@ -22,6 +24,7 @@
     - node == "primary-master"
     - cluster != "initialized"
   tags:
+    - install
     - setup
 
 - debug: var=node_ip
@@ -32,6 +35,7 @@
   when:
     - node == "primary-master"
   tags:
+    - install
     - token
 
 - name: Join the cluster as master
@@ -40,6 +44,7 @@
     - node == "secondary-master"
     - cluster != "joined"
   tags:
+    - install
     - join
 
 - name: Join the cluster as worker
@@ -48,38 +53,18 @@
     - node == "worker"
     - cluster != "joined"
   tags:
+    - install
     - join
 
 - name: Discover node status again once everyone has joined
   include_tasks: discover.yml
+  tags:
+    - install
 
-- name: Show cluster info
-  shell: kubectl cluster-info
-  register: cluster_info
+- name: Show cluster status
+  include_tasks: status.yml
   when:
     - node == "primary-master"
   tags:
-    - status
-
-- debug:
-    var: cluster_info
-  when:
-    - node == "primary-master"
-  tags:
-    - status
-
-- name: Show cluster nodes
-  shell: kubectl get nodes
-  register: status
-  when:
-    - node == "primary-master"
-  tags:
-    - status
-
-#- debug: var=status
-- debug:
-    var: status
-  when:
-    - node == "primary-master"
-  tags:
+    - install
     - status

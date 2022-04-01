@@ -10,14 +10,14 @@
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 - name: Init the cluster with kubeadm
   # No LBA
-  # command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} --pod-network-cidr={{ cdir[cni] }} --ignore-preflight-errors=Mem
+  # command: kubeadm init --token {{ init_token }} --apiserver-advertise-address={{ node_ip }} --pod-network-cidr={{ cni_cdir_extra[cni] }} --ignore-preflight-errors=Mem
   # With LBA (HA cluster)
-  # command: kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ lba_ip }} --control-plane-endpoint={{ lba_ip }}:6443 --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem
-  # command: kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem
+  # command: kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ lba_ip }} --control-plane-endpoint={{ lba_ip }}:6443 --pod-network-cidr={{ cni_cdir_extra[cni] }} --upload-certs --ignore-preflight-errors=Mem
+  # command: kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cni_cdir_extra[cni] }} --upload-certs --ignore-preflight-errors=Mem
   # args:
   #   creates: /etc/kubernetes/{{ init_file }}
   shell: |
-    kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cdir[cni] }} --upload-certs --ignore-preflight-errors=Mem > /etc/kubernetes/{{ init_file }}
+    kubeadm init --control-plane-endpoint={{ lba_ip }}:6443  --pod-network-cidr={{ cni_cdir_extra[cni] }} --upload-certs --ignore-preflight-errors=Mem > /etc/kubernetes/{{ init_file }}
     cat /etc/kubernetes/{{ init_file }}
   register: init_cmd_out
   notify: kubelet status

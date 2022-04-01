@@ -20,16 +20,16 @@
     repo: "deb [arch=arm64] https://apt.kubernetes.io/ kubernetes-xenial main"
     update_cache: yes
 
-- name: Install Kubernetes packages
+- name: Install Kubernetes {{ version }}
   apt:
     name: "{{ packages }}"
     state: present
     force: yes
   vars:
     packages:
-      - kubelet={{ version }}
-      - kubeadm={{ version }}
-      - kubectl={{ version }}
+      - kubelet={{ version }}-00
+      - kubeadm={{ version }}-00
+      - kubectl={{ version }}-00
       - kubernetes-cni
 
 - name: Check Kubernetes version

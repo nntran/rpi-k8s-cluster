@@ -5,27 +5,34 @@
   tags:
     - common
 
-- hosts: lba
+- hosts: load_balancer
   roles:
-    - docker
     - lba/haproxy
   tags:
-    - lba
+    - haproxy
 
 - hosts: master_pri, master_sec, worker
   roles:
-    # NFS PV Support
+    # NFS PV support
     - storage/nfs
-    # Longhorn PV Support
+    # Longhorn PV support
     - storage/iscsi
+    # OpenEBS PV support
+    #- storrage/openebs
   tags:
     - storage
 
 - hosts: master_pri, master_sec, worker
   roles:
-    #- containerd
-    - docker
-    - kubernetes
+    #- role: containerd
+    - role: docker
+      vars:
+        version: "20.10.13"
+    - role: kubernetes
+      vars:
+        version: "1.23.5"
+        cni: "weave" # or "flannel"
+        cidr: "10.14.0.0/16"
   tags:
     - kubernetes
 # - hosts: master_pri

@@ -1,61 +1,11 @@
 ---
-# Installing the base packages
-- name: Install packages that allow apt to be used over HTTPS
-  apt:
-    name: "{{ packages }}"
-    state: present
-    update_cache: yes
-  vars:
-    packages:
-      - apt-transport-https
-      - ca-certificates
-      - gnupg-agent
-      - software-properties-common
-
-# Uninstall docker-ce, docker-ce-cli, ...
-- name: Remove existing docker ...
-  shell: |
-    apt-mark showhold
-    apt-mark unhold docker-ce docker-ce-cli
-    apt-get purge -y docker-ce docker-ce-cli
-    apt-get autoremove -y
-  # run_once: true
-  ignore_errors: yes
-
-# Installing Docker
-- name: Add an apt signing key for docker
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
-
-- name: Add apt repository for stable version
-  apt_repository:
-    # Ubuntu 20.04 dont have docker focal repo => force use bionic
-    repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    #repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu bionic stable
-    state: present
-    update_cache: yes
-
-- name: Install docker and its dependencies
-  apt:
-    name: "{{ packages }}"
-    state: present
-    update_cache: yes
-  vars:
-    packages:
-      # Ubuntu 20.x
-      - docker-ce=5:{{ docker_version }}~3-0~ubuntu-{{ ansible_distribution_release }}
-      - docker-ce-cli=5:{{ docker_version }}~3-0~ubuntu-{{ ansible_distribution_release }}
-      - containerd.io={{ containerd_version }}
-      # Ubuntu 18.x
-      # - docker-ce
-      # - docker-ce-cli
-      # - containerd.io
-  notify:
-    - docker status
+- name: Install docker {{ version }}
+  include_tasks: install.yml
+  tags:
+    - install
 
 # Copy the daemon.json from local to remote
-- name: Copy the daemon.json config file on remote
+- name: Create daemon.json config file
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
@@ -63,13 +13,11 @@
   notify:
     - docker status
   register: cmdline_modified
-
-# Add a user named to the “docker” group.
-- name: Add ansible ssh user to docker group
-  user:
-    name: "{{ ansible_ssh_user }}"
-    group: docker
+  tags:
+    - install
 
 - name: Reboot host
   reboot:
   when: cmdline_modified.changed
+  tags:
+    - install

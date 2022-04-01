@@ -1,19 +1,20 @@
 ---
 # Kubernetes version
-version: "1.19.6-00"
+# apt-cache madison kubelet
+version: "1.19.6"
 
 # Load balancer IP
 # Already defined in cluster.yml file
 #lba_ip: 10.11.13.20
 
 # Pode network cdir
-pod_network_cidr: "172.20.0.0/16"
+cidr: "172.20.0.0/16"
 
 # CNI
 cni: "weave"
-cdir:
-  flannel: "{{ pod_network_cidr }}"
-  weave: "{{ pod_network_cidr }}"
+cni_cdir_extra:
+  flannel: "{{ cidr }}"
+  weave: "{{ cidr }}"
 
 # Kubeadm init logs file
 init_file: kubeadm_init.log

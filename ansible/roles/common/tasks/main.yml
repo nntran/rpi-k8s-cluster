@@ -34,6 +34,6 @@
 
 - name: Install common packages
   apt:
-    name: "{{ common_packages }}"
+    name: "{{ packages }}"
     state: present
     install-recommends: no

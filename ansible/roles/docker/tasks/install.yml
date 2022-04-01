@@ -1,0 +1,51 @@
+---
+# Installing the base packages
+- name: Install packages that allow apt to be used over HTTPS
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+      - gnupg-agent
+
+# Installing Docker
+- name: Add an apt signing key for docker
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add apt repository for stable version
+  apt_repository:
+    # Ubuntu 20.04 dont have docker focal repo => force use bionic
+    repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    #repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+    update_cache: yes
+
+- name: Install docker packages and its dependencies
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      # Ubuntu 20.x
+      - docker-ce=5:{{ version }}~3-0~ubuntu-{{ ansible_distribution_release }}
+      - docker-ce-cli=5:{{ version }}~3-0~ubuntu-{{ ansible_distribution_release }}
+      - containerd.io={{ containerd_version }}
+      # Ubuntu 18.x
+      # - docker-ce
+      # - docker-ce-cli
+      # - containerd.io
+  notify:
+    - docker status
+
+# Add a user named to the “docker” group.
+- name: Add ansible ssh user to docker group
+  user:
+    name: "{{ ansible_ssh_user }}"
+    group: docker
