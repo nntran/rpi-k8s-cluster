@@ -15,43 +15,36 @@
   tags:
     - install
 
-- debug: var=node
 - debug: var=cluster
+- debug: var=primary_master
 
 - name: Create the cluster
   include_tasks: setup.yml
-  when:
-    - node == "primary-master"
-    - cluster != "initialized"
+  when: node == "master" and primary_master is defined and cluster != "initialized"
   tags:
     - install
     - setup
 
-- debug: var=node_ip
 - debug: var=cluster
+- debug: var=primary_master
 
 - name: Generate short-lived join token
   include_tasks: token.yml
-  when:
-    - node == "primary-master"
+  when: node == "master" and primary_master is defined
   tags:
     - install
     - token
 
 - name: Join the cluster as master
   include_tasks: master_join.yml
-  when:
-    - node == "secondary-master"
-    - cluster != "joined"
+  when: node == "master" and primary_master is undefined and cluster != "joined"
   tags:
     - install
     - join
 
 - name: Join the cluster as worker
   include_tasks: worker_join.yml
-  when:
-    - node == "worker"
-    - cluster != "joined"
+  when: node == "worker" and cluster != "joined"
   tags:
     - install
     - join
@@ -63,8 +56,7 @@
 
 - name: Show cluster status
   include_tasks: status.yml
-  when:
-    - node == "primary-master"
+  when: primary_master is defined
   tags:
     - install
     - status

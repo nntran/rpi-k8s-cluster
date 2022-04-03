@@ -1,18 +1,19 @@
 # Uninstall kubernetes cluster on master and worker hosts
 ---
-- hosts: master_pri, master_sec, worker
+- hosts: master, worker
   tasks:
     # Remove Kubernetes cluster
     - name: Delete kubernetes cluster
       shell: |
         kubeadm reset -f
-      # when:
-      #   - node == "primary-master" or node == "secondary-master"
+      when:
+        - node == "master" and primary_master is defined
       ignore_errors: yes
 
     - name: Clean kubernetes config
       shell: |
         rm -rf /etc/kubernetes
+        rm -rf /var/lib/kubelet
         rm -rf ~/.kube
         # exit 0
       # run_once: true
@@ -33,12 +34,6 @@
         apt-get purge -y kubeadm kubectl kubelet kubernetes-cni kube*
         apt-get autoremove -y
       # run_once: true
-      ignore_errors: yes
-
-    - name: Clean apt cache
-      shell: |
-        rm -rf /var/cache/apt/*
-        apt clean all
       ignore_errors: yes
 
     # - name: Reboot host

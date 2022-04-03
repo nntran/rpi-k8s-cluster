@@ -9,4 +9,4 @@ nfs_client_packages:
 server_mount_dir: "/mnt/kube_default_pv"
 client_mount_dir: "/mnt/kube_default_pv"
 
-master_ip: "10.11.13.21"
+master_ip: ""

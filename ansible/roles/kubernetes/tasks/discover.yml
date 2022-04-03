@@ -3,13 +3,14 @@
   stat:
     path: /etc/kubernetes/admin.conf
   register: st
-  when: node == "primary-master"
+  when:
+    - node == "master"
 
 - name: Register master initialized status
   set_fact:
     cluster: "initialized"
   when:
-    - node == "primary-master"
+    - node == "master"
     - st.stat.exists
     - reset != true
 

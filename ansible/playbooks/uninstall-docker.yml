@@ -1,5 +1,5 @@
 ---
-- hosts: master_pri, master_sec, worker
+- hosts: master, worker
   tasks:
     # Uninstall docker-ce, docker-ce-cli, ...
     # List of docker dependencies to uninstall
@@ -26,10 +26,4 @@
         rm -rf /var/lib/docker.bk
         rm -rf /etc/docker
         rm -rf /var/run/docker.sock
-      ignore_errors: yes
-
-    - name: Clean apt cache
-      shell: |
-        rm -rf /var/cache/apt/*
-        apt clean all
       ignore_errors: yes

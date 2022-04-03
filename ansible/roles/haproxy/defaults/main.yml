@@ -1,0 +1,18 @@
+max_connection: "4096"
+user_name: "haproxy"
+group_name: "haproxy"
+
+# Default haproxy timeouts
+connect_timeout: 5000
+client_timeout: 50000
+server_timeout: 50000
+
+# Backend settings.
+backend_balance_method: "roundrobin"
+backend_httpchk: "" #'HEAD / HTTP/1.1\r\nHost:localhost'
+
+# List of backend servers
+backend_servers: []
+
+# Extra global vars (see README for example usage).
+global_vars: []

@@ -5,13 +5,17 @@
       shell: |
         find /var/log -type f -delete
       ignore_errors: yes
-      tags:
-        - clean
 
-    - name: Clean apt cache
-      shell: |
-        rm -rf /var/cache/apt/*
-        apt clean all
-      ignore_errors: yes
-      tags:
-        - clean
+    # - name: Clean apt cache
+    #   shell: |
+    #     rm -rf /var/cache/apt/*
+    #     apt clean all
+    #   ignore_errors: yes
+
+    - name: Remove useless packages from cache
+      apt:
+        autoclean: yes
+
+    - name: Remove dependencies that are no longer required
+      apt:
+        autoremove: yes

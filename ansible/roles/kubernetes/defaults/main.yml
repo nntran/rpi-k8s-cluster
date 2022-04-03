@@ -1,11 +1,10 @@
 ---
 # Kubernetes version
 # apt-cache madison kubelet
-version: "1.19.6"
+version: "1.23.5"
 
 # Load balancer IP
-# Already defined in cluster.yml file
-#lba_ip: 10.11.13.20
+lba_ip: ""
 
 # Pode network cdir
 cidr: "172.20.0.0/16"

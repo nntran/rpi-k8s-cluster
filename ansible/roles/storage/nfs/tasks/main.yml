@@ -1,8 +1,10 @@
 ---
-- name: Setup Server
-  include_tasks: setup_server.yml
-  when: node == "primary-master"
+- name: Setup server
+  include_tasks: setup-server.yml
+  when:
+    - primary_master is defined
 
-- name: Setup Clients
-  include_tasks: setup_clients.yml
-  when: node == "worker" or node == "secondary-master"
+- name: Setup clients
+  include_tasks: setup-clients.yml
+  when:
+    - primary_master is undefined

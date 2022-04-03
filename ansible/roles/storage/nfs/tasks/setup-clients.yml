@@ -5,15 +5,7 @@
   tags:
     - install
 
-- name: Ensure mount directory exists
-  file:
-    path: "{{ client_mount_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: 0777
-  tags:
-    - configure
+- debug: var=master_ip
 
 - name: Mount the server dir
   mount:
@@ -22,3 +14,4 @@
     fstype: nfs
     opts: rw
     state: mounted
+  ignore_errors: yes

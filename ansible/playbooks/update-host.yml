@@ -1,0 +1,31 @@
+---
+- hosts: all
+  tasks:
+    - name: Change hostname to match node name
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Update /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^127.0.1.1\t.*$"
+        line: "127.0.1.1\t{{ inventory_hostname }}"
+
+    - name: Set hostname
+      #shell: hostnamectl set-hostname {{ inventory_hostname }}
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    # These two tasks will add host to local known hosts automatically
+    - name: Check SSH known_hosts for {{ inventory_hostname }}
+      local_action: shell ssh-keygen -F {{ inventory_hostname }}
+      register: checkForKnownHostsEntry
+      failed_when: false
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Add {{ inventory_hostname }} to SSH known hosts automatically
+      when: checkForKnownHostsEntry.rc == 1
+      changed_when: checkForKnownHostsEntry.rc == 1
+      set_fact:
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
