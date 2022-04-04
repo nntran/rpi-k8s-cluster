@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-config
+data:
+  traefik.yaml: |
+    ## traefik.yaml
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
+
+    # API and dashboard configuration
+    # https://docs.traefik.io/operations/api/
+    api:
+      insecure: true
+      debug: true
+      dashboard: true
+      # You can now access the dashboard on the port 8080 of the Traefik instance,
+      # at the following URL: http://<Traefik IP>:8080/dashboard/
+      # or at the following URL: http://traefik.dev.lan/dashboard/ (trailing slash is mandatory).
+      # The API serve at http://traefik.dev.lan/api/http/routers
+
+    serversTransport:
+      insecureSkipVerify: true
+
+    # Enable ping
+    ping: {}
+
+    # Routing and load balancing
+    # https://docs.traefik.io/routing/entrypoints/
+    entryPoints:
+      http:
+        address: ":80"
+        forwardedHeaders:
+          insecure: true
+
+      https:
+        address: ":443"
+        forwardedHeaders:
+          insecure: true
+
+      metrics:
+        address: ":8082"
+
+    providers:
+      # https://doc.traefik.io/traefik/providers/kubernetes-crd/
+      # kubernetesCRD:
+      # https://doc.traefik.io/traefik/providers/kubernetes-ingress/
+      kubernetesIngress:
+        # When deployed into Kubernetes, Traefik reads the environment
+        # variables KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT or KUBECONFIG to construct the endpoint.
+        # endpoint: "http://localhost:8080"
+
+        # The access token is looked up in /var/run/secrets/kubernetes.io/serviceaccount/token
+        # and the SSL CA certificate in /var/run/secrets/kubernetes.io/serviceaccount/ca.crt.
+        # They are both provided automatically as mounts in the pod where Traefik is deployed.
+        # token: "mytoken"
+
+        # Path to the certificate authority file. Used for the Kubernetes client configuration.
+        # certAuthFilePath: "/my/ca.crt"
+
+        # Whether to disable PassHost Headers.
+        # Optional, Default=false
+        # disablePassHostHeaders: false
+
+        # Array of namespaces to watch.
+        # Optional, Default: all namespaces (empty array)
+        # namespaces:
+        #     - "default"
+        #     - "production"
+
+        # By default, Traefik processes all Ingress objects in the configured namespaces.
+        # A label selector can be defined to filter on specific Ingress objects only.
+        # @see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+        # Optional,Default: empty (process all Ingresses)
+        # labelselector: "A and not B"
+
+        # Value of kubernetes.io/ingress.class annotation that identifies Ingress objects to be processed.
+        # If the parameter is non-empty, only Ingresses containing an annotation with the same value are processed.
+        # Otherwise, Ingresses missing the annotation, having an empty value, or with the value traefik are processed.
+        # Optional, Default: empty
+        # ingressClass: "traefik-internal"
+
+        # Hostname used for Kubernetes Ingress endpoints.
+        # Optional, Default: empty
+        # ingressEndpoint:
+        #     hostname: "example.net"
+        # # Or IP used for Kubernetes Ingress endpoints
+        #     ip: "1.2.3.4"
+        # # Published Kubernetes Service to copy status from. Format: namespace/servicename.
+        #     publishedService: "namespace/foo-service"
+
+        # Optional, Default: 0 (no throttling)
+        throttleDuration: "0"
+        # throttleDuration: "10s"
+
+    # https://docs.traefik.io/observability/logs/
+    log:
+      level: INFO
+      filePath: "/var/log/traefik.log"
+      format: json
+
+    accessLog: {}
+    # Configuring Multiple Filters
+    #   filePath: "/var/log/traefik_access.log"
+    #   format: json
+    #   filters:
+    #     statusCodes:
+    #       - "200"
+    #       - "300-302"
+    #     retryAttempts: true
+    #     minDuration: "10ms"

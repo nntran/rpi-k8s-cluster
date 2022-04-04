@@ -8,7 +8,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: http
 spec:
   rules:
-    - host: "traefik.dev.lan"
+    - host: "traefik.rpi.lan"
       http:
         paths:
           - pathType: Prefix

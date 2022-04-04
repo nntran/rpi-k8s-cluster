@@ -3,13 +3,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: traefik
-  labels:
-    app: traefik
+  namespace: proxy
 spec:
   selector:
-    app: traefik
-
-  #type: LoadBalancer
+    app.kubernetes.io/name: traefik
   type: NodePort
   ports:
     - name: http
@@ -27,12 +24,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: traefik-ui
-  labels:
-    app: traefik-ui
+  namespace: proxy
 spec:
   selector:
-    app: traefik
-  #type: LoadBalancer
+    app.kubernetes.io/name: traefik
   #type: NodePort
   ports:
     - name: admin
