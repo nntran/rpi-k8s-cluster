@@ -10,8 +10,12 @@ A HA Kubernetes cluster on Raspberry Pi
   - [Configure the cluster](#configure-the-cluster)
     - [Configure the `cluster.yml` file](#configure-the-clusteryml-file)
     - [Verify all hosts are accessible](#verify-all-hosts-are-accessible)
+    - [Update and upgrade OS](#update-and-upgrade-os)
     - [Over clocking all rpis](#over-clocking-all-rpis)
-  - [Create the Kubernetes cluster](#create-the-kubernetes-cluster)
+  - [Manage the Kubernetes (K8S) cluster](#manage-the-kubernetes-k8s-cluster)
+    - [Create the K8S cluster](#create-the-k8s-cluster)
+    - [Upgrade the K8S cluster](#upgrade-the-k8s-cluster)
+    - [Destroy the K8S cluster](#destroy-the-k8s-cluster)
 
 <!-- /TOC -->
 
@@ -161,10 +165,10 @@ all:
 
 ### Verify all hosts are accessible
 
-Use the ansible playbook `check-hosts.yml` to check hosts.
+Use the ansible playbook `check.yml` to check all the cluster hosts.
 
 ```
-ansible-playbook -i cluster.yml ansible/playbooks/check-hosts.yml
+ansible-playbook -i cluster.yml ansible/playbooks/check.yml
 ```
 
 You will see that at the end:
@@ -181,19 +185,31 @@ rpi-k8s-worker-02          : ok=15   changed=0    unreachable=0    failed=0    s
 rpi-k8s-worker-03          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
+### Update and upgrade OS
+
+Use the ansible playbook `upgrade.yml` to upgrade OS before creating the Kubernetes cluster.
+
+```
+ansible-playbook -i cluster.yml ansible/playbooks/upgrade.yml
+```
 ### Over clocking all rpis
 
-Use the ansible playbook `check-hosts.yml` to check hosts.
+Use the ansible playbook `overclock.yml` to check hosts.
 
 ```
-ansible-playbook -i cluster.yml ansible/playbooks/check-hosts.yml
+ansible-playbook -i cluster.yml ansible/playbooks/overclock.yml
 ```
 
+## Manage the Kubernetes (K8S) cluster
 
-
-## Create the Kubernetes cluster
+### Create the K8S cluster
 
 ```
 ansible-playbook -i cluster.yml ansible/site.yml
 ```
 
+### Upgrade the K8S cluster
+
+
+
+### Destroy the K8S cluster
