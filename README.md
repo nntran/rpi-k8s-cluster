@@ -1,9 +1,29 @@
 # rpi-k8s-cluster
 A HA Kubernetes cluster on Raspberry Pi
 
+<!-- TOC -->
+
+- [rpi-k8s-cluster](#rpi-k8s-cluster)
+  - [Install Ubuntu on SD card](#install-ubuntu-on-sd-card)
+    - [Format SD card and installing the Ubuntu 20.04.4 LTS 64](#format-sd-card-and-installing-the-ubuntu-20044-lts-64)
+    - [Change the password](#change-the-password)
+  - [Configure the cluster](#configure-the-cluster)
+    - [Configure the `cluster.yml` file](#configure-the-clusteryml-file)
+    - [Verify all hosts are accessible](#verify-all-hosts-are-accessible)
+    - [Over clocking all rpis](#over-clocking-all-rpis)
+  - [Create the Kubernetes cluster](#create-the-kubernetes-cluster)
+
+<!-- /TOC -->
+
 ## Install Ubuntu on SD card 
 
 ### Format SD card and installing the Ubuntu 20.04.4 LTS 64
+
+
+![](docs/rpi-imager-1.png)
+
+
+![](docs/rpi-imager-2.png)
 
 
 ### Change the password
@@ -70,7 +90,74 @@ Set your new paswword (ex: raspberry) and reconnect with ssh.
 
 ### Configure the `cluster.yml` file
 
-!(cluster.yml)[cluster.yml]
+[cluster.yml](cluster.yml)
+
+```yaml
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_user: ubuntu
+    ansible_ssh_pass: raspberry
+    ansible_become: true
+    ansible_become_user: root
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    rpi-k8s-lba-01:
+      ansible_host: 10.11.13.20
+    rpi-k8s-master-01:
+      ansible_host: 10.11.13.21
+    rpi-k8s-master-02:
+      ansible_host: 10.11.13.22
+    rpi-k8s-master-03:
+      ansible_host: 10.11.13.23
+    rpi-k8s-worker-01:
+      ansible_host: 10.11.13.31
+    rpi-k8s-worker-02:
+      ansible_host: 10.11.13.32
+    rpi-k8s-worker-03:
+      ansible_host: 10.11.13.33
+  children:
+    load_balancer:
+      hosts:
+        rpi-k8s-lba-01:
+      vars:
+        node: "lba"
+        # List of backend servers.
+        backend_servers:
+          - name: rpi-k8s-master-01
+            address: 10.11.13.21
+          - name: rpi-k8s-master-02
+            address: 10.11.13.22
+          - name: rpi-k8s-master-03
+            address: 10.11.13.23
+    master:
+      hosts:
+        rpi-k8s-master-01:
+          primary_master: true
+          lba_ip: 10.11.13.20
+        rpi-k8s-master-02:
+        rpi-k8s-master-03:
+      vars:
+        node: "master"
+    worker:
+      hosts:
+        rpi-k8s-worker-01:
+        rpi-k8s-worker-02:
+        rpi-k8s-worker-03:
+      vars:
+        node: "worker"
+    rpi3bp:
+      hosts:
+        rpi-k8s-lba-01:
+        rpi-k8s-worker-01:
+        rpi-k8s-master-02:
+        rpi-k8s-master-03:
+    rpi4:
+      hosts:
+        rpi-k8s-master-01:
+        rpi-k8s-worker-02:
+        rpi-k8s-worker-03:
+```
 
 ### Verify all hosts are accessible
 
