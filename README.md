@@ -1,8 +1,6 @@
 # rpi-k8s-cluster
 My HA Kubernetes cluster on Raspberry Pi
 
-![](docs/rpi-cluster.jpg)
-
 <!-- TOC -->
 
 - [rpi-k8s-cluster](#rpi-k8s-cluster)
@@ -25,8 +23,10 @@ My HA Kubernetes cluster on Raspberry Pi
 
 ## Architecture
 
-
+![](docs/architecture.png)
 ## Materials
+
+![](docs/rpi-cluster.jpg)
 
 * 6 Raspberry PI 4B for the Kubernetes (K8S) cluster
   - 3 RPI 4B 4Go for master nodes
