@@ -5,6 +5,8 @@ My HA Kubernetes cluster on Raspberry Pi
 
 - [rpi-k8s-cluster](#rpi-k8s-cluster)
   - [Architecture](#architecture)
+    - [Infrastructure](#infrastructure)
+    - [High level Kubenretes cluster](#high-level-kubenretes-cluster)
   - [Materials](#materials)
   - [Step 1: Prepare SD cards with the Ubuntu Server OS](#step-1-prepare-sd-cards-with-the-ubuntu-server-os)
     - [1.1. Install the Ubuntu 20.04.4 LTS 64 using the Raspberry Imager tool](#11-install-the-ubuntu-20044-lts-64-using-the-raspberry-imager-tool)
@@ -27,7 +29,14 @@ My HA Kubernetes cluster on Raspberry Pi
 
 ## Architecture
 
-![](docs/architecture.png)
+### Infrastructure
+
+![](docs/infrastructure.png)
+
+### High level Kubenretes cluster
+
+![](docs/kubernetes-cluster.png)
+
 ## Materials
 
 ![](docs/rpi-cluster.jpg)
@@ -36,9 +45,9 @@ My HA Kubernetes cluster on Raspberry Pi
   - 3 RPI 4B 4Go for master nodes
   - 3 RPI 4B 8Go for worker nodes
 * 1 Raspberry PI 3B+ for the load balancer (LBA) node
-* 7 SD cards
-  - 1 => 32G (for LBA)
-  - 6 => 128G (for K8S cluster)
+* 7 micro SD cards
+  - 1 => 32G (for LBA node)
+  - 6 => 128G (for K8S cluster nodes)
 * 1 Ethernet Network Switch with 8 ports
 - 1 Wireless Portable/Travel router
 * 1 USB charger 60W with 8 usb ports
