@@ -1,17 +1,21 @@
 # rpi-k8s-cluster
-A HA Kubernetes cluster on Raspberry Pi
+My HA Kubernetes cluster on Raspberry Pi
+
+![](docs/rpi-cluster.jpg)
 
 <!-- TOC -->
 
 - [rpi-k8s-cluster](#rpi-k8s-cluster)
-  - [Install Ubuntu on SD card](#install-ubuntu-on-sd-card)
-    - [Format SD card and installing the Ubuntu 20.04.4 LTS 64](#format-sd-card-and-installing-the-ubuntu-20044-lts-64)
-    - [Change the password](#change-the-password)
-  - [Configure the cluster](#configure-the-cluster)
-    - [Configure the `cluster.yml` file](#configure-the-clusteryml-file)
-    - [Verify all hosts are accessible](#verify-all-hosts-are-accessible)
-    - [Update and upgrade OS](#update-and-upgrade-os)
-    - [Over clocking all rpis](#over-clocking-all-rpis)
+  - [Architecture](#architecture)
+  - [Materials](#materials)
+  - [Step 1: Prepare SD cards with the Ubuntu Server OS](#step-1-prepare-sd-cards-with-the-ubuntu-server-os)
+    - [1.1. Install the Ubuntu 20.04.4 LTS 64 using the Raspberry Imager tool](#11-install-the-ubuntu-20044-lts-64-using-the-raspberry-imager-tool)
+    - [1.2. Change the password for all nodes](#12-change-the-password-for-all-nodes)
+  - [Step 2: Configure the cluster](#step-2-configure-the-cluster)
+    - [2.1. Configure the `cluster.yml` file](#21-configure-the-clusteryml-file)
+    - [2.2. Check all hosts are accessible via SSH](#22-check-all-hosts-are-accessible-via-ssh)
+    - [2.3. Update and upgrade OS](#23-update-and-upgrade-os)
+    - [2.4. Overclocking all RPI nodes](#24-overclocking-all-rpi-nodes)
   - [Manage the Kubernetes (K8S) cluster](#manage-the-kubernetes-k8s-cluster)
     - [Create the K8S cluster](#create-the-k8s-cluster)
     - [Upgrade the K8S cluster](#upgrade-the-k8s-cluster)
@@ -19,82 +23,58 @@ A HA Kubernetes cluster on Raspberry Pi
 
 <!-- /TOC -->
 
-## Install Ubuntu on SD card 
-
-### Format SD card and installing the Ubuntu 20.04.4 LTS 64
+## Architecture
 
 
-![](docs/rpi-imager-1.png)
+## Materials
 
+* 6 Raspberry PI 4B for the Kubernetes (K8S) cluster
+  - 3 RPI 4B 4Go for master nodes
+  - 3 RPI 4B 8Go for worker nodes
+* 1 Raspberry PI 3B+ for the load balancer (LBA) node
+* 7 SD cards
+  - 1 => 32G (for LBA)
+  - 6 => 128G (for K8S cluster)
+* 1 Ethernet Network Switch with 8 ports
+- 1 Wireless Portable/Travel router
+* 1 USB charger 60W with 8 usb ports
+- 1 Raspberry PI cluster case
+- 6 USB-C cables for RPI 4B
+- 2 USB-A cables (LBA and Wifi router)
+- 8 RJ45 cables Cat. 6
+
+## Step 1: Prepare SD cards with the Ubuntu Server OS
+
+### 1.1. Install the Ubuntu 20.04.4 LTS 64 using the [Raspberry Imager](https://www.raspberrypi.com/software/) tool
 
 ![](docs/rpi-imager-2.png)
 
 
-### Change the password
-
-```
-ssh ssh ubuntu@10.11.13.21
-
-The authenticity of host '10.11.13.21 (10.11.13.21)' can't be established.
-ED25519 key fingerprint is SHA256:Qz8VvXybEzMas22gvl6SEHX+pb1pH9GhWRgo2cg62cw.
-This key is not known by any other names
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '10.11.13.21' (ED25519) to the list of known hosts.
-ubuntu@10.11.13.21's password:
-You are required to change your password immediately (administrator enforced)
-Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-1056-raspi aarch64)
-
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-  System information as of Thu Mar 31 13:46:44 UTC 2022
-
-  System load:  0.37               Temperature:           29.7 C
-  Usage of /:   2.2% of 116.90GB   Processes:             138
-  Memory usage: 2%                 Users logged in:       0
-  Swap usage:   0%                 IPv4 address for eth0: 10.11.13.21
-
- * Super-optimized for small spaces - read how we shrank the memory
-   footprint of MicroK8s to make it the smallest full K8s around.
-
-   https://ubuntu.com/blog/microk8s-memory-optimisation
-
-20 updates can be applied immediately.
-To see these additional updates run: apt list --upgradable
-
-
-
-The programs included with the Ubuntu system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
-applicable law.
-
-WARNING: Your password has expired.
-You must change your password now and login again!
-Changing password for ubuntu.
-Current password:
-```
+### 1.2. Change the password for all nodes
 
 The default password of the ubuntu user is `ubuntu`.
 
 ```
+ssh ssh ubuntu@10.11.13.21
+
+...
+...
+...
+
 New password:
 Retype new password:
 passwd: password updated successfully
 Connection to 10.11.13.23 closed.
 ```
 
-Set your new paswword (ex: raspberry) and reconnect with ssh.
+Set the new password and reconnect with ssh.
 
 
-## Configure the cluster
 
-### Configure the `cluster.yml` file
+## Step 2: Configure the cluster
+### 2.1. Configure the `cluster.yml` file
 
-[cluster.yml](cluster.yml)
+In this step, i will configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with my RPI cluster.
 
 ```yaml
 all:
@@ -150,32 +130,17 @@ all:
         rpi-k8s-worker-03:
       vars:
         node: "worker"
-    rpi3bp:
-      hosts:
-        rpi-k8s-lba-01:
-        rpi-k8s-worker-01:
-        rpi-k8s-master-02:
-        rpi-k8s-master-03:
-    rpi4:
-      hosts:
-        rpi-k8s-master-01:
-        rpi-k8s-worker-02:
-        rpi-k8s-worker-03:
+...
 ```
 
-### Verify all hosts are accessible
+### 2.2. Check all hosts are accessible via SSH
 
-Use the ansible playbook `check.yml` to check all the cluster hosts.
+I use the ansible playbook `check.yml` to check all the cluster hosts.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/check.yml
-```
 
-You will see that at the end:
-
-```
 ...
-
 rpi-k8s-lba-01             : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 rpi-k8s-master-01          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 rpi-k8s-master-02          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
@@ -183,18 +148,23 @@ rpi-k8s-master-03          : ok=15   changed=0    unreachable=0    failed=0    s
 rpi-k8s-worker-01          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 rpi-k8s-worker-02          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 rpi-k8s-worker-03          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-```
+``` 
 
-### Update and upgrade OS
+All the cluster nodes are OK ;)
 
-Use the ansible playbook `upgrade.yml` to upgrade OS before creating the Kubernetes cluster.
+### 2.3. Update and upgrade OS
+
+Now, i use the ansible playbook `upgrade.yml` to upgrade OS before creating the Kubernetes cluster.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/upgrade.yml
 ```
-### Over clocking all rpis
 
-Use the ansible playbook `overclock.yml` to check hosts.
+It takes a few minutes to upgrade all the cluster nodes.
+
+### 2.4. Overclocking all RPI nodes
+
+I overclock all the RPI nodes with the ansible playbook `overclock.yml`.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/overclock.yml
