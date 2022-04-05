@@ -12,13 +12,17 @@ My HA Kubernetes cluster on Raspberry Pi
   - [Step 2: Configure the cluster](#step-2-configure-the-cluster)
     - [2.1. Configure the `cluster.yml` file](#21-configure-the-clusteryml-file)
     - [2.2. Check all hosts are accessible via SSH](#22-check-all-hosts-are-accessible-via-ssh)
-    - [2.3. Update and upgrade OS](#23-update-and-upgrade-os)
+    - [2.3. Update hosts and upgrade OS](#23-update-hosts-and-upgrade-os)
     - [2.4. Overclocking all RPI nodes](#24-overclocking-all-rpi-nodes)
-  - [Manage the Kubernetes (K8S) cluster](#manage-the-kubernetes-k8s-cluster)
-    - [Create the K8S cluster](#create-the-k8s-cluster)
+  - [Step 3: Create the Kubernetes cluster using `Ansible`](#step-3-create-the-kubernetes-cluster-using-ansible)
+    - [3.1. Install the load balancer and the Kubernetes cluster](#31-install-the-load-balancer-and-the-kubernetes-cluster)
+    - [3.2. Download the Kubernetes configuration on my local host under `~/.kube` directory](#32-download-the-kubernetes-configuration-on-my-local-host-under-kube-directory)
+    - [3.3. Check the cluster status](#33-check-the-cluster-status)
+  - [How to manage the cluster ?](#how-to-manage-the-cluster-)
     - [Upgrade the K8S cluster](#upgrade-the-k8s-cluster)
     - [Destroy the K8S cluster](#destroy-the-k8s-cluster)
 
+<!-- /TOC -->
 <!-- /TOC -->
 
 ## Architecture
@@ -152,11 +156,12 @@ rpi-k8s-worker-03          : ok=15   changed=0    unreachable=0    failed=0    s
 
 All the cluster nodes are OK ;)
 
-### 2.3. Update and upgrade OS
+### 2.3. Update hosts and upgrade OS
 
-Now, i use the ansible playbook `upgrade.yml` to upgrade OS before creating the Kubernetes cluster.
+Now, i use these following ansible playbook to upgrade OS before creating the Kubernetes cluster.
 
 ```
+ansible-playbook -i cluster.yml ansible/playbooks/update-host.yml
 ansible-playbook -i cluster.yml ansible/playbooks/upgrade.yml
 ```
 
@@ -169,14 +174,39 @@ I overclock all the RPI nodes with the ansible playbook `overclock.yml`.
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/overclock.yml
 ```
+## Step 3: Create the Kubernetes cluster using `Ansible`
 
-## Manage the Kubernetes (K8S) cluster
-
-### Create the K8S cluster
+### 3.1. Install the load balancer and the Kubernetes cluster
 
 ```
 ansible-playbook -i cluster.yml ansible/site.yml
 ```
+
+Now i can go to take a coffee and come back later (5-10 minutes).
+
+### 3.2. Download the Kubernetes configuration on my local host under `~/.kube` directory
+
+```
+ansible-playbook -i cluster.yml ansible/playbooks/copy-kubernetes-config.yml
+```
+
+The file is named `cluster-k8s-rpi-config`.
+
+### 3.3. Check the cluster status
+
+```
+kubectl get nodes
+
+NAME                STATUS   ROLES                  AGE     VERSION
+rpi-k8s-master-01   Ready    control-plane,master   2d10h   v1.23.5
+rpi-k8s-master-02   Ready    control-plane,master   2d10h   v1.23.5
+rpi-k8s-master-03   Ready    control-plane,master   2d10h   v1.23.5
+rpi-k8s-worker-01   Ready    <none>                 2d10h   v1.23.5
+rpi-k8s-worker-02   Ready    <none>                 2d10h   v1.23.5
+rpi-k8s-worker-03   Ready    <none>                 2d10h   v1.23.5
+```
+
+## How to manage the cluster ?
 
 ### Upgrade the K8S cluster
 
