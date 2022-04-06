@@ -242,7 +242,7 @@ rpi-k8s-worker-03   Ready    <none>                 2d10h   v1.23.5
 
 ### 6. Deploy Traefik as ingress controller
 
-Our Kubenetes cluster is running, let's deploy Traefik include in the `addons` directory.
+Our Kubenetes cluster is running, let's deploy Traefik included in the `addons` directory.
 
 ```
 kubectl create namespace proxy
