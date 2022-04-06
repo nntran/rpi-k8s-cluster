@@ -1,32 +1,32 @@
-# rpi-k8s-cluster
-My HA Kubernetes cluster on Raspberry Pi
+# HA Kubernetes cluster on Raspberry Pi
+
+This cluster is used daily to carry out my personnal and professional projects (poc, deployment strategies, ci/cd, ...).
 
 <!-- TOC -->
 
-- [rpi-k8s-cluster](#rpi-k8s-cluster)
+- [HA Kubernetes cluster on Raspberry Pi](#ha-kubernetes-cluster-on-raspberry-pi)
   - [Architecture](#architecture)
     - [Infrastructure](#infrastructure)
     - [High level Kubernetes cluster](#high-level-kubernetes-cluster)
   - [Materials](#materials)
-  - [Install Ubuntu Server OS for all nodes](#install-ubuntu-server-os-for-all-nodes)
-    - [1. Install the Ubuntu 20.04.4 LTS 64 using the Raspberry Imager tool](#1-install-the-ubuntu-20044-lts-64-using-the-raspberry-imager-tool)
+  - [Let's get started](#lets-get-started)
+    - [1. Install Ubuntu Server OS for all nodes](#1-install-ubuntu-server-os-for-all-nodes)
     - [2. Change the default password](#2-change-the-default-password)
-  - [Configure the cluster](#configure-the-cluster)
-    - [1. Configure the `cluster.yml` file](#1-configure-the-clusteryml-file)
-    - [2. Check all hosts are accessible via SSH](#2-check-all-hosts-are-accessible-via-ssh)
-    - [3. Update hosts and upgrade OS](#3-update-hosts-and-upgrade-os)
-    - [4. Overclocking all RPI nodes](#4-overclocking-all-rpi-nodes)
-  - [Deploy the Kubernetes cluster and HAProxy](#deploy-the-kubernetes-cluster-and-haproxy)
+    - [3. Configure the cluster](#3-configure-the-cluster)
+    - [4. Check all hosts are accessible via SSH with Ansible](#4-check-all-hosts-are-accessible-via-ssh-with-ansible)
+    - [5. Update hosts and upgrade OS](#5-update-hosts-and-upgrade-os)
+    - [6. Overclocking all RPI nodes](#6-overclocking-all-rpi-nodes)
+  - [Deploy the HAProxy and Kubernetes cluster](#deploy-the-haproxy-and-kubernetes-cluster)
     - [1. Install common packages on all nodes](#1-install-common-packages-on-all-nodes)
     - [2. Install the load balancer **HAProxy**](#2-install-the-load-balancer-haproxy)
     - [3. Install Docker and Kubernetes](#3-install-docker-and-kubernetes)
     - [4. Download the Kubernetes configuration on my local host under `~/.kube` directory](#4-download-the-kubernetes-configuration-on-my-local-host-under-kube-directory)
     - [5. Check the cluster status](#5-check-the-cluster-status)
+    - [6. Deploy Traefik as ingress controller](#6-deploy-traefik-as-ingress-controller)
   - [How to manage the cluster ?](#how-to-manage-the-cluster-)
     - [Upgrade the K8S cluster](#upgrade-the-k8s-cluster)
     - [Destroy the K8S cluster](#destroy-the-k8s-cluster)
 
-<!-- /TOC -->
 <!-- /TOC -->
 
 ## Architecture
@@ -58,9 +58,11 @@ My HA Kubernetes cluster on Raspberry Pi
 - 2 USB-A cables (LBA and Wifi router)
 - 8 RJ45 cables Cat. 6
 
-## Install Ubuntu Server OS for all nodes
+## Let's get started
 
-### 1. Install the Ubuntu 20.04.4 LTS 64 using the [Raspberry Imager](https://www.raspberrypi.com/software/) tool
+### 1. Install Ubuntu Server OS for all nodes
+
+I use the [Raspberry Imager](https://www.raspberrypi.com/software/) tool to install the Ubuntu 20.04.4 LTS 64 on each micro sd card.
 
 ![](docs/rpi-imager-2.png)
 
@@ -70,7 +72,7 @@ My HA Kubernetes cluster on Raspberry Pi
 The default password of the ubuntu user is `ubuntu`.
 
 ```
-ssh ssh ubuntu@10.11.13.21
+ssh ubuntu@10.11.13.21
 
 ...
 ...
@@ -84,11 +86,9 @@ Connection to 10.11.13.23 closed.
 
 Set the new password and reconnect with ssh.
 
+### 3. Configure the cluster
 
-## Configure the cluster
-### 1. Configure the `cluster.yml` file
-
-In this step, i will configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with my RPI cluster.
+In this step, i configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with my RPI cluster.
 
 ```yaml
 all:
@@ -147,9 +147,9 @@ all:
 ...
 ```
 
-### 2. Check all hosts are accessible via SSH
+### 4. Check all hosts are accessible via SSH with Ansible
 
-I use the ansible playbook `check.yml` to check all the cluster hosts.
+Let's use the ansible playbook `check.yml` to check all the cluster hosts.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/check.yml
@@ -168,9 +168,9 @@ rpi-k8s-worker-03          : ok=15   changed=0    unreachable=0    failed=0    s
 
 All the cluster nodes are OK ;)
 
-### 3. Update hosts and upgrade OS
+### 5. Update hosts and upgrade OS
 
-Now, i use these following ansible playbook to upgrade OS before creating the Kubernetes cluster.
+We can use these following Ansible playbooks to upgrade OS.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/update-host.yml
@@ -182,14 +182,15 @@ ansible-playbook -i cluster.yml ansible/playbooks/upgrade.yml
 
 It takes a few minutes to upgrade all the cluster nodes.
 
-### 4. Overclocking all RPI nodes
+### 6. Overclocking all RPI nodes
 
-I overclock all the RPI nodes with the ansible playbook `overclock.yml`.
+Now, let's overclock all the RPI nodes with the ansible playbook `overclock.yml`.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/overclock.yml
 ```
-## Deploy the Kubernetes cluster and HAProxy
+
+## Deploy the HAProxy and Kubernetes cluster
 
 ### 1. Install common packages on all nodes
 
@@ -202,13 +203,20 @@ ansible-playbook -i cluster.yml ansible/site.yml --tags common
 ```
 ansible-playbook -i cluster.yml ansible/site.yml --tags lba
 ```
+
+After installation, we can take a look at our HAProxy dashboard at http://10.11.13.20:8080/stats
+
+![](docs/haproxy-dashboard-first-install.png)
+
+All our backends servers are **red** because we haven't installed Kubernetes and [Traefik](https://traefik.io/) yet.
+
 ### 3. Install Docker and Kubernetes
 
 ```
 ansible-playbook -i cluster.yml ansible/site.yml --tags kubernetes
 ```
 
-Now i can go to take a coffee and come back later (5-10 minutes).
+Now we can go to take a coffee and come back later (5-10 minutes).
 
 ### 4. Download the Kubernetes configuration on my local host under `~/.kube` directory
 
@@ -232,6 +240,31 @@ rpi-k8s-worker-02   Ready    <none>                 2d10h   v1.23.5
 rpi-k8s-worker-03   Ready    <none>                 2d10h   v1.23.5
 ```
 
+### 6. Deploy Traefik as ingress controller
+
+Our Kubenetes cluster is running, let's deploy Traefik include in the `addons` directory.
+
+```
+kubectl create namespace proxy
+kubectl apply -f addons/traefik
+```
+
+Now all our backend servers should be in green state.
+
+![](docs/haproxy-dashboard.png)
+
+Let's put the domain `traefik.repi.lan` in the `/etc/hosts` to view the Traefik dashboard.
+
+```
+...
+...
+
+10.11.13.20 traefik.rpi.lan
+```
+
+The Traefik dashboard is now available at http://traefik.rpi.lan
+
+![](docs/traefik-dashboard.png)
 
 ## How to manage the cluster ?
 
