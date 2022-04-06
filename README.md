@@ -88,7 +88,7 @@ Set the new password and reconnect with ssh.
 
 ### 3. Configure the cluster
 
-In this step, i configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with my RPI cluster.
+In this step, we configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with our RPI cluster.
 
 ```yaml
 all:
