@@ -20,7 +20,7 @@ This cluster is used daily to carry out my personnal and professional projects (
     - [1. Install common packages on all nodes](#1-install-common-packages-on-all-nodes)
     - [2. Install the load balancer **HAProxy**](#2-install-the-load-balancer-haproxy)
     - [3. Install Docker and Kubernetes](#3-install-docker-and-kubernetes)
-    - [4. Download the Kubernetes configuration on my local host under `~/.kube` directory](#4-download-the-kubernetes-configuration-on-my-local-host-under-kube-directory)
+    - [4. Download the Kubernetes configuration](#4-download-the-kubernetes-configuration)
     - [5. Check the cluster status](#5-check-the-cluster-status)
     - [6. Deploy Traefik as ingress controller](#6-deploy-traefik-as-ingress-controller)
   - [How to manage the cluster ?](#how-to-manage-the-cluster-)
@@ -218,13 +218,13 @@ ansible-playbook -i cluster.yml ansible/site.yml --tags kubernetes
 
 Now we can go to take a coffee and come back later (5-10 minutes).
 
-### 4. Download the Kubernetes configuration on my local host under `~/.kube` directory
+### 4. Download the Kubernetes configuration
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/copy-kubernetes-config.yml
 ```
 
-The file is named `cluster-k8s-rpi-config`.
+This playbook will copy the `.kube/config` file in our local host under the `~/.kube` directory. The file is named `cluster-k8s-rpi-config`.
 
 ### 5. Check the cluster status
 
