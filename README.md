@@ -253,7 +253,7 @@ Now all our backend servers should be in green state.
 
 ![](docs/haproxy-dashboard.png)
 
-Let's put the domain `traefik.repi.lan` in the `/etc/hosts` to view the Traefik dashboard.
+Let's put the domain `traefik.rpi.lan` in the `/etc/hosts` to view the Traefik dashboard.
 
 ```
 ...
