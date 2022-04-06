@@ -6,20 +6,22 @@ My HA Kubernetes cluster on Raspberry Pi
 - [rpi-k8s-cluster](#rpi-k8s-cluster)
   - [Architecture](#architecture)
     - [Infrastructure](#infrastructure)
-    - [High level Kubenretes cluster](#high-level-kubenretes-cluster)
+    - [High level Kubernetes cluster](#high-level-kubernetes-cluster)
   - [Materials](#materials)
-  - [Step 1: Prepare SD cards with the Ubuntu Server OS](#step-1-prepare-sd-cards-with-the-ubuntu-server-os)
-    - [1.1. Install the Ubuntu 20.04.4 LTS 64 using the Raspberry Imager tool](#11-install-the-ubuntu-20044-lts-64-using-the-raspberry-imager-tool)
-    - [1.2. Change the password for all nodes](#12-change-the-password-for-all-nodes)
-  - [Step 2: Configure the cluster](#step-2-configure-the-cluster)
-    - [2.1. Configure the `cluster.yml` file](#21-configure-the-clusteryml-file)
-    - [2.2. Check all hosts are accessible via SSH](#22-check-all-hosts-are-accessible-via-ssh)
-    - [2.3. Update hosts and upgrade OS](#23-update-hosts-and-upgrade-os)
-    - [2.4. Overclocking all RPI nodes](#24-overclocking-all-rpi-nodes)
-  - [Step 3: Create the Kubernetes cluster using `Ansible`](#step-3-create-the-kubernetes-cluster-using-ansible)
-    - [3.1. Install the load balancer and the Kubernetes cluster](#31-install-the-load-balancer-and-the-kubernetes-cluster)
-    - [3.2. Download the Kubernetes configuration on my local host under `~/.kube` directory](#32-download-the-kubernetes-configuration-on-my-local-host-under-kube-directory)
-    - [3.3. Check the cluster status](#33-check-the-cluster-status)
+  - [Install Ubuntu Server OS for all nodes](#install-ubuntu-server-os-for-all-nodes)
+    - [1. Install the Ubuntu 20.04.4 LTS 64 using the Raspberry Imager tool](#1-install-the-ubuntu-20044-lts-64-using-the-raspberry-imager-tool)
+    - [2. Change the default password](#2-change-the-default-password)
+  - [Configure the cluster](#configure-the-cluster)
+    - [1. Configure the `cluster.yml` file](#1-configure-the-clusteryml-file)
+    - [2. Check all hosts are accessible via SSH](#2-check-all-hosts-are-accessible-via-ssh)
+    - [3. Update hosts and upgrade OS](#3-update-hosts-and-upgrade-os)
+    - [4. Overclocking all RPI nodes](#4-overclocking-all-rpi-nodes)
+  - [Deploy the Kubernetes cluster and HAProxy](#deploy-the-kubernetes-cluster-and-haproxy)
+    - [1. Install common packages on all nodes](#1-install-common-packages-on-all-nodes)
+    - [2. Install the load balancer **HAProxy**](#2-install-the-load-balancer-haproxy)
+    - [3. Install Docker and Kubernetes](#3-install-docker-and-kubernetes)
+    - [4. Download the Kubernetes configuration on my local host under `~/.kube` directory](#4-download-the-kubernetes-configuration-on-my-local-host-under-kube-directory)
+    - [5. Check the cluster status](#5-check-the-cluster-status)
   - [How to manage the cluster ?](#how-to-manage-the-cluster-)
     - [Upgrade the K8S cluster](#upgrade-the-k8s-cluster)
     - [Destroy the K8S cluster](#destroy-the-k8s-cluster)
@@ -33,7 +35,7 @@ My HA Kubernetes cluster on Raspberry Pi
 
 ![](docs/infrastructure.png)
 
-### High level Kubenretes cluster
+### High level Kubernetes cluster
 
 ![](docs/kubernetes-cluster.png)
 
@@ -56,14 +58,14 @@ My HA Kubernetes cluster on Raspberry Pi
 - 2 USB-A cables (LBA and Wifi router)
 - 8 RJ45 cables Cat. 6
 
-## Step 1: Prepare SD cards with the Ubuntu Server OS
+## Install Ubuntu Server OS for all nodes
 
-### 1.1. Install the Ubuntu 20.04.4 LTS 64 using the [Raspberry Imager](https://www.raspberrypi.com/software/) tool
+### 1. Install the Ubuntu 20.04.4 LTS 64 using the [Raspberry Imager](https://www.raspberrypi.com/software/) tool
 
 ![](docs/rpi-imager-2.png)
 
 
-### 1.2. Change the password for all nodes
+### 2. Change the default password
 
 The default password of the ubuntu user is `ubuntu`.
 
@@ -83,9 +85,8 @@ Connection to 10.11.13.23 closed.
 Set the new password and reconnect with ssh.
 
 
-
-## Step 2: Configure the cluster
-### 2.1. Configure the `cluster.yml` file
+## Configure the cluster
+### 1. Configure the `cluster.yml` file
 
 In this step, i will configure the Ansible inventory file ([cluster.yml](cluster.yml)) to match with my RPI cluster.
 
@@ -146,13 +147,15 @@ all:
 ...
 ```
 
-### 2.2. Check all hosts are accessible via SSH
+### 2. Check all hosts are accessible via SSH
 
 I use the ansible playbook `check.yml` to check all the cluster hosts.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/check.yml
+```
 
+```
 ...
 rpi-k8s-lba-01             : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 rpi-k8s-master-01          : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
@@ -165,35 +168,49 @@ rpi-k8s-worker-03          : ok=15   changed=0    unreachable=0    failed=0    s
 
 All the cluster nodes are OK ;)
 
-### 2.3. Update hosts and upgrade OS
+### 3. Update hosts and upgrade OS
 
 Now, i use these following ansible playbook to upgrade OS before creating the Kubernetes cluster.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/update-host.yml
+```
+
+```
 ansible-playbook -i cluster.yml ansible/playbooks/upgrade.yml
 ```
 
 It takes a few minutes to upgrade all the cluster nodes.
 
-### 2.4. Overclocking all RPI nodes
+### 4. Overclocking all RPI nodes
 
 I overclock all the RPI nodes with the ansible playbook `overclock.yml`.
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/overclock.yml
 ```
-## Step 3: Create the Kubernetes cluster using `Ansible`
+## Deploy the Kubernetes cluster and HAProxy
 
-### 3.1. Install the load balancer and the Kubernetes cluster
+### 1. Install common packages on all nodes
 
 ```
-ansible-playbook -i cluster.yml ansible/site.yml
+ansible-playbook -i cluster.yml ansible/site.yml --tags common
+```
+
+### 2. Install the load balancer **HAProxy**
+
+```
+ansible-playbook -i cluster.yml ansible/site.yml --tags lba
+```
+### 3. Install Docker and Kubernetes
+
+```
+ansible-playbook -i cluster.yml ansible/site.yml --tags kubernetes
 ```
 
 Now i can go to take a coffee and come back later (5-10 minutes).
 
-### 3.2. Download the Kubernetes configuration on my local host under `~/.kube` directory
+### 4. Download the Kubernetes configuration on my local host under `~/.kube` directory
 
 ```
 ansible-playbook -i cluster.yml ansible/playbooks/copy-kubernetes-config.yml
@@ -201,7 +218,7 @@ ansible-playbook -i cluster.yml ansible/playbooks/copy-kubernetes-config.yml
 
 The file is named `cluster-k8s-rpi-config`.
 
-### 3.3. Check the cluster status
+### 5. Check the cluster status
 
 ```
 kubectl get nodes
@@ -215,10 +232,10 @@ rpi-k8s-worker-02   Ready    <none>                 2d10h   v1.23.5
 rpi-k8s-worker-03   Ready    <none>                 2d10h   v1.23.5
 ```
 
+
 ## How to manage the cluster ?
 
 ### Upgrade the K8S cluster
-
 
 
 ### Destroy the K8S cluster
