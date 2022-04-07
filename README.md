@@ -62,7 +62,7 @@ This cluster is used daily to carry out my personnal and professional projects (
 
 ### 1. Install Ubuntu Server OS for all nodes
 
-I use the [Raspberry Imager](https://www.raspberrypi.com/software/) tool to install the Ubuntu 20.04.4 LTS 64 on each micro sd card.
+There are several methods and tools to install Linux OS on a SD card for RPI. We will use the [Raspberry Imager](https://www.raspberrypi.com/software/) tool to install the Ubuntu Server 20.04.4 LTS 64 on each micro SD card of our RPI cluster.
 
 ![](docs/rpi-imager-2.png)
 
