@@ -1,20 +1,20 @@
 ---
 - hosts: all
   tasks:
-    - debug:
-        msg: "{{ lookup('env', 'PWD') }}"
-    - debug: var=ansible_os_family
-    - debug: var=ansible_distribution_release
-    - debug: var=ansible_python_interpreter
-    - debug: var=ansible_python_version
-    - debug: msg="ansible_user={{ ansible_user }}"
-    - debug: msg="ansible_user_id={{ ansible_user_id }}"
-    - debug: msg="USER={{ lookup('env', 'USER') }}"
-    - debug: msg="ansible_all_ipv4_addresses={{ ansible_all_ipv4_addresses }}"
-    - debug: msg="ansible_default_ipv4.address={{ ansible_default_ipv4.address }}"
-    - debug: msg="ansible_host={{ ansible_host }}"
-    - debug: msg="IPv4 IP (eth0)={{ ansible_facts["eth0"]["ipv4"]["address"] }}"
-    - debug: msg="IPv4 IP (eth0)={{ ansible_facts.eth0.ipv4.address }}"
+    # - debug:
+    #     msg: "{{ lookup('env', 'PWD') }}"
+    # - debug: var=ansible_os_family
+    # - debug: var=ansible_distribution_release
+    # - debug: var=ansible_python_interpreter
+    # - debug: var=ansible_python_version
+    # - debug: msg="ansible_user={{ ansible_user }}"
+    # - debug: msg="ansible_user_id={{ ansible_user_id }}"
+    # - debug: msg="USER={{ lookup('env', 'USER') }}"
+    # - debug: msg="ansible_all_ipv4_addresses={{ ansible_all_ipv4_addresses }}"
+    # - debug: msg="ansible_default_ipv4.address={{ ansible_default_ipv4.address }}"
+    # - debug: msg="ansible_host={{ ansible_host }}"
+    # - debug: msg="IPv4 IP (eth0)={{ ansible_facts["eth0"]["ipv4"]["address"] }}"
+    # - debug: msg="IPv4 IP (eth0)={{ ansible_facts.eth0.ipv4.address }}"
 
     # https://docs.ansible.com/ansible/latest/plugins/lookup/inventory_hostnames.html
     - name: Show all the hosts in inventory
